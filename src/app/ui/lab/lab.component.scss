@@ -1,0 +1,386 @@
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+// ─── Layout ───────────────────────────────────────────────────────────────────
+
+.lab-layout {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+// ─── Side panel ───────────────────────────────────────────────────────────────
+
+.side-panel {
+  width: 260px;
+  flex-shrink: 0;
+  background: rgba(255 255 255 / 0.018);
+  border-right: 1px solid rgba(255 255 255 / 0.055);
+  display: flex;
+  flex-direction: column;
+  transition: width 0.25s ease, opacity 0.2s ease;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.lab-layout.sidebar-collapsed .side-panel {
+  width: 0;
+  opacity: 0;
+  border-right: none;
+  pointer-events: none;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 8px 8px 14px;
+  border-bottom: 1px solid rgba(255 255 255 / 0.055);
+  flex-shrink: 0;
+  gap: 6px;
+}
+
+.panel-title {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255 255 255 / 0.2);
+  flex: 1;
+}
+
+.collapse-btn {
+  background: none;
+  border: 1px solid rgba(255 255 255 / 0.08);
+  border-radius: 4px;
+  color: rgba(255 255 255 / 0.25);
+  cursor: pointer;
+  font-size: 13px;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: all 0.15s;
+  flex-shrink: 0;
+
+  &:hover { background: rgba(255 255 255 / 0.07); color: rgba(255 255 255 / 0.7); }
+}
+
+.panel-footer {
+  padding: 7px 14px;
+  border-top: 1px solid rgba(255 255 255 / 0.055);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  color: rgba(255 255 255 / 0.22);
+  letter-spacing: 0.02em;
+
+  b { color: rgba(255 255 255 / 0.55); font-weight: 600; }
+}
+
+.stat-sep { color: rgba(255 255 255 / 0.12); }
+
+.expand-btn {
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  background: rgba(255 255 255 / 0.05);
+  border: 1px solid rgba(255 255 255 / 0.1);
+  border-radius: 4px;
+  color: rgba(255 255 255 / 0.4);
+  cursor: pointer;
+  font-size: 14px;
+  width: 22px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: all 0.15s;
+
+  &:hover { background: rgba(255 255 255 / 0.1); color: #fff; }
+}
+
+// ─── Playground ───────────────────────────────────────────────────────────────
+
+.playground {
+  flex: 1;
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+// ─── Floating navigation ──────────────────────────────────────────────────────
+
+.main-nav {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  gap: 2px;
+  background: rgba(10 10 12 / 0.82);
+  border: 1px solid rgba(255 255 255 / 0.1);
+  border-radius: 10px;
+  padding: 3px;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 4px 24px rgba(0 0 0 / 0.4);
+
+  button {
+    background: none;
+    border: none;
+    border-radius: 7px;
+    color: rgba(255 255 255 / 0.38);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    cursor: pointer;
+    transition: color 0.15s, background 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+
+    &:hover { color: rgba(255 255 255 / 0.65); }
+
+    &.active {
+      background: rgba(255 255 255 / 0.1);
+      color: rgba(255 255 255 / 0.92);
+    }
+  }
+}
+
+.nav-count {
+  font-size: 9px;
+  font-weight: 700;
+  background: rgba(255 255 255 / 0.1);
+  border-radius: 8px;
+  padding: 1px 5px;
+  letter-spacing: 0;
+}
+
+// ─── Floating bottom actions ──────────────────────────────────────────────────
+
+.floating-actions {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: rgba(10 10 12 / 0.82);
+  border: 1px solid rgba(255 255 255 / 0.09);
+  border-radius: 10px;
+  padding: 3px;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 4px 24px rgba(0 0 0 / 0.4);
+}
+
+.action-sep {
+  width: 1px;
+  height: 16px;
+  background: rgba(255 255 255 / 0.08);
+  margin: 0 2px;
+  flex-shrink: 0;
+}
+
+.action-scan {
+  padding: 5px 16px;
+  border-radius: 7px;
+  border: 1px solid rgba(80 200 120 / 0.3);
+  background: rgba(80 200 120 / 0.07);
+  color: rgba(80 200 120 / 0.85);
+  font-size: 11px;
+  font-weight: 600;
+  font-family: inherit;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover:not(:disabled) {
+    background: rgba(80 200 120 / 0.14);
+    border-color: rgba(80 200 120 / 0.5);
+    color: #50c878;
+  }
+
+  &:disabled { opacity: 0.45; cursor: default; }
+
+  &.scanning { animation: pulse-scan 1s ease-in-out infinite; }
+}
+
+.action-toggle {
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 7px;
+  border: 1px solid rgba(255 255 255 / 0.1);
+  background: transparent;
+  color: rgba(255 255 255 / 0.4);
+  font-size: 11px;
+  font-weight: 600;
+  font-family: inherit;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover { background: rgba(255 255 255 / 0.07); color: rgba(255 255 255 / 0.75); }
+
+  &.active {
+    background: rgba(255 255 255 / 0.1);
+    border-color: rgba(255 255 255 / 0.2);
+    color: rgba(255 255 255 / 0.9);
+  }
+
+  &.mode-btn {
+    &.real { border-color: rgba(80 200 120 / 0.35); color: rgba(80 200 120 / 0.8); }
+    &.exploratory { border-color: rgba(140 120 255 / 0.35); color: rgba(140 120 255 / 0.8); }
+  }
+}
+
+.action-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  border: none;
+  background: transparent;
+  color: rgba(255 255 255 / 0.45);
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  font-family: inherit;
+
+  &:hover { background: rgba(255 255 255 / 0.07); color: rgba(255 255 255 / 0.85); }
+
+  &.action-danger:hover {
+    background: rgba(255 60 60 / 0.12);
+    color: rgba(255 100 100 / 0.85);
+  }
+
+  &.action-info {
+    font-style: italic;
+    font-weight: 700;
+    font-size: 13px;
+
+    &.active {
+      background: rgba(255 255 255 / 0.1);
+      color: rgba(255 255 255 / 0.9);
+    }
+  }
+}
+
+// ─── Info panel ───────────────────────────────────────────────────────────────
+
+.info-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 29;
+  pointer-events: all;
+}
+
+.info-panel {
+  position: absolute;
+  bottom: 68px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  background: rgba(10 10 14 / 0.92);
+  border: 1px solid rgba(255 255 255 / 0.1);
+  border-radius: 12px;
+  padding: 16px 18px;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 8px 32px rgba(0 0 0 / 0.5);
+  width: 380px;
+  display: flex;
+  gap: 18px;
+}
+
+.info-section {
+  flex: 1;
+  min-width: 0;
+}
+
+.info-section-title {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255 255 255 / 0.25);
+  margin-bottom: 8px;
+}
+
+.info-row {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  margin-bottom: 5px;
+
+  &:last-child { margin-bottom: 0; }
+}
+
+.info-key {
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255 255 255 / 0.7);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.info-desc {
+  font-size: 10px;
+  color: rgba(255 255 255 / 0.35);
+  line-height: 1.4;
+}
+
+@keyframes pulse-scan {
+  0%, 100% { opacity: 0.5; }
+  50%       { opacity: 1; }
+}
+
+// ─── Views ────────────────────────────────────────────────────────────────────
+
+.view-workspace {
+  position: absolute;
+  inset: 0;
+  transition: opacity 0.2s;
+
+  &.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+.view-page {
+  position: absolute;
+  inset: 52px 0 0 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.view-loading {
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: rgba(255 255 255 / 0.2);
+  letter-spacing: 0.06em;
+}

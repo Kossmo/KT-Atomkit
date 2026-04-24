@@ -1,0 +1,44 @@
+<div class="toolbar">
+  <div class="toolbar-group">
+    <button
+      class="toggle-btn"
+      [class.active]="store.showHydrogens()"
+      (click)="store.toggleHydrogens()"
+      title="Toggle hydrogen atoms"
+    >H</button>
+
+    <button
+      class="toggle-btn mode-btn"
+      [class.real]="store.mode() === 'real'"
+      [class.exploratory]="store.mode() === 'exploratory'"
+      (click)="store.toggleMode()"
+      [title]="store.mode() === 'real' ? 'Real mode (PubChem validation)' : 'Exploratory mode'"
+    >
+      {{ store.mode() === 'real' ? 'Real' : 'Explore' }}
+    </button>
+  </div>
+
+  <div class="toolbar-group">
+    <button
+      class="scan-btn"
+      [class.scanning]="store.isDiscovering()"
+      [disabled]="store.isDiscovering()"
+      (click)="scanRequested.emit()"
+      title="Scan for completed molecules"
+    >{{ store.isDiscovering() ? '...' : 'Scan' }}</button>
+
+    <button
+      class="icon-btn"
+      (click)="store.toggleMuted()"
+      [title]="store.muted() ? 'Unmute' : 'Mute'"
+    >
+      {{ store.muted() ? '♪' : '♫' }}
+    </button>
+
+    <button
+      class="icon-btn danger"
+      (click)="clearScene()"
+      title="Clear scene"
+    >✕</button>
+  </div>
+</div>

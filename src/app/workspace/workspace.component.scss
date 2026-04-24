@@ -1,0 +1,72 @@
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.workspace-svg {
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+  user-select: none;
+  background: #0d0d0f;
+
+  &:active { cursor: grabbing; }
+}
+
+.bond-group {
+  cursor: pointer;
+
+  .bond-line {
+    fill: none;
+    stroke: rgba(255 255 255 / 0.4);
+    stroke-width: 2;
+    stroke-linecap: round;
+    transition: stroke 0.1s;
+  }
+
+  &:hover .bond-line {
+    stroke: rgba(255 100 100 / 0.75);
+    stroke-width: 2.5;
+  }
+}
+
+.atom-group {
+  cursor: pointer;
+}
+
+.atom-circle {
+  stroke: none;
+  filter: saturate(0.55) brightness(0.85);
+}
+
+.atom-label {
+  text-anchor: middle;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  fill: rgba(255 255 255 / 0.9);
+  pointer-events: none;
+  letter-spacing: -0.02em;
+}
+
+.empty-hint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  pointer-events: none;
+  color: rgba(255 255 255 / 0.15);
+  font-size: 14px;
+  letter-spacing: 0.02em;
+
+  .sub {
+    font-size: 11px;
+    color: rgba(255 255 255 / 0.08);
+  }
+}

@@ -1,0 +1,45 @@
+<svg
+  #svgEl
+  class="workspace-svg"
+  [attr.viewBox]="viewBoxStr"
+  (mousemove)="onMouseMove($event)"
+  (mouseup)="onMouseUp()"
+  (mouseleave)="onMouseUp()"
+>
+  <!-- Bonds -->
+  <g class="bonds-layer">
+    @for (bond of visibleBonds(); track bond.id) {
+      <g class="bond-group" (click)="onBondClick($event, bond)">
+        @for (path of bondPaths(bond); track $index) {
+          <path class="bond-line" [attr.d]="path" />
+        }
+      </g>
+    }
+  </g>
+
+  <!-- Atoms -->
+  <g class="atoms-layer">
+    @for (atom of visibleAtoms(); track atom.id) {
+      <g
+        class="atom-group"
+        [attr.transform]="'translate(' + atom.x + ',' + atom.y + ')'"
+        (mousedown)="onAtomMouseDown($event, atom)"
+        (click)="onAtomClick($event, atom)"
+      >
+        <circle
+          class="atom-circle"
+          [attr.r]="atomRadius(atom)"
+          [attr.fill]="atom.element.cpkColor"
+        />
+        <text class="atom-label" dy="0.35em">{{ atom.element.symbol }}</text>
+      </g>
+    }
+  </g>
+</svg>
+
+@if (atomList().length === 0) {
+  <div class="empty-hint">
+    <span>Click an element to place it here</span>
+    <span class="sub">Drag atoms · Click bond to break it</span>
+  </div>
+}

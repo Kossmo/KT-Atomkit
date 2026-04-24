@@ -1,0 +1,144 @@
+@if (!rdkit.isReady()) {
+  <app-loading [progress]="rdkit.loadProgress()" />
+}
+
+<app-molecule-card (view3d)="viewing3dMolecule.set($event)" />
+
+@defer (when viewing3dMolecule() !== null) {
+  @if (viewing3dMolecule(); as mol) {
+    <app-molecule-3d-viewer [molecule]="mol" (closed)="viewing3dMolecule.set(null)" />
+  }
+}
+
+<div class="lab-layout" [class.sidebar-collapsed]="!store.sidebarOpen()">
+
+  <!-- Side panel — visible only in Lab view -->
+  @if (mainView() === 'workspace') {
+    <aside class="side-panel">
+      <div class="panel-header">
+        <span class="panel-title">Elements</span>
+        <button class="collapse-btn" (click)="store.toggleSidebar()" title="Collapse">‹</button>
+      </div>
+
+      <app-fragment-palette (fragmentSelected)="onFragmentSelected($event)" />
+      <app-periodic-table (elementSelected)="onElementSelected($event)" />
+
+      <div class="panel-footer">
+        <span class="stat"><b>{{ store.famousCount() }}</b> famous</span>
+        <span class="stat-sep">·</span>
+        <span class="stat"><b>{{ store.exploratoryCount() }}</b> novel</span>
+      </div>
+    </aside>
+
+    @if (!store.sidebarOpen()) {
+      <button class="expand-btn" (click)="store.toggleSidebar()" title="Open panel">›</button>
+    }
+  }
+
+  <!-- Main area -->
+  <main class="playground">
+
+    <!-- Workspace — always mounted to preserve state -->
+    <div class="view-workspace" [class.hidden]="mainView() !== 'workspace'">
+      <app-workspace />
+    </div>
+
+    <!-- Collection page -->
+    @if (mainView() === 'collection') {
+      <div class="view-page">
+        <app-collection (view3d)="viewing3dMolecule.set($event)" />
+      </div>
+    }
+
+    <!-- Challenges page -->
+    @if (mainView() === 'challenges') {
+      <div class="view-page">
+        <app-challenges
+          (startChallenge)="startChallenge($event)"
+          (startDaily)="startDailyChallenge()"
+        />
+      </div>
+    }
+
+  </main>
+
+  <!-- Floating navigation — centered on full page width -->
+  <nav class="main-nav">
+    <button [class.active]="mainView() === 'workspace'" (click)="mainView.set('workspace')">
+      Lab
+    </button>
+    <button [class.active]="mainView() === 'challenges'" (click)="mainView.set('challenges')">
+      Challenges
+    </button>
+    <button [class.active]="mainView() === 'collection'" (click)="mainView.set('collection')">
+      Collection
+      @if (store.famousCount() + store.exploratoryCount(); as total) {
+        <span class="nav-count">{{ total }}</span>
+      }
+    </button>
+  </nav>
+
+  <!-- Challenge player overlay — visible when a challenge is active -->
+  @if ((activeChallengeId() || activeDailyMode()) && mainView() === 'workspace') {
+    <app-challenge-player
+      [challengeId]="activeChallengeId()"
+      [dailyActive]="activeDailyMode()"
+      [dailyDef]="dailyDef"
+      [success]="challengeSuccess()"
+      (quit)="quitChallenge()"
+    />
+  }
+
+  <!-- Info panel -->
+  @if (showInfo()) {
+    <div class="info-backdrop" (click)="showInfo.set(false)"></div>
+    <div class="info-panel">
+      <div class="info-section">
+        <div class="info-section-title">Lab</div>
+        <div class="info-row"><span class="info-key">Click element</span><span class="info-desc">Place an atom in the workspace</span></div>
+        <div class="info-row"><span class="info-key">Drag atom</span><span class="info-desc">Move it around</span></div>
+        <div class="info-row"><span class="info-key">Click bond</span><span class="info-desc">Break the bond</span></div>
+        <div class="info-row"><span class="info-key">Select + Delete</span><span class="info-desc">Remove an atom</span></div>
+      </div>
+      <div class="info-section">
+        <div class="info-section-title">Buttons</div>
+        <div class="info-row"><span class="info-key">H</span><span class="info-desc">Show or hide hydrogen atoms (bonds remain active)</span></div>
+        <div class="info-row"><span class="info-key">Real / Exp</span><span class="info-desc">Real — only known molecules are accepted. Exp — any valid structure counts</span></div>
+        <div class="info-row"><span class="info-key">♫</span><span class="info-desc">Toggle sound</span></div>
+        <div class="info-row"><span class="info-key">✕</span><span class="info-desc">Clear all atoms from the workspace</span></div>
+      </div>
+    </div>
+  }
+
+  <!-- Floating bottom actions -->
+  @if (mainView() === 'workspace') {
+    <div class="floating-actions">
+      <button
+        class="action-toggle"
+        [class.active]="store.showHydrogens()"
+        (click)="store.toggleHydrogens()"
+        title="Toggle hydrogen atoms"
+      >H</button>
+      <button
+        class="action-toggle mode-btn"
+        [class.real]="store.mode() === 'real'"
+        [class.exploratory]="store.mode() === 'exploratory'"
+        (click)="store.toggleMode()"
+        [title]="store.mode() === 'real' ? 'Real mode' : 'Exploratory mode'"
+      >{{ store.mode() === 'real' ? 'Real' : 'Exp' }}</button>
+      <div class="action-sep"></div>
+      <button class="action-icon" (click)="store.toggleMuted()" [title]="store.muted() ? 'Unmute' : 'Mute'">
+        {{ store.muted() ? '♪' : '♫' }}
+      </button>
+      <button class="action-icon action-danger" (click)="clearScene()" title="Clear lab">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"/>
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+        </svg>
+      </button>
+      <div class="action-sep"></div>
+      <button class="action-icon action-info" [class.active]="showInfo()" (click)="showInfo.set(!showInfo())" title="How it works">i</button>
+    </div>
+  }
+
+</div>
