@@ -52,10 +52,11 @@ Expérience web où l'utilisateur assemble librement des atomes dans un espace 2
 - Ordre des catégories : Nonmetals en premier, Noble Gases en dernier (peu utiles pour la chimie)
 - **Par défaut** : seuls les Nonmetals sont ouverts, toutes les autres catégories sont fermées
 - Animation accordéon via CSS grid : `grid-template-rows: 0fr → 1fr`, chevron tourne à 0°/−90°
-- Barre de recherche (symbole, nom, numéro atomique)
+- Barre de recherche (symbole, nom, numéro atomique) — résultats triés : **symboles en priorité** avant les noms
 - Chaque élément affiche son badge de valence (nombre de liaisons) entre le nom et le numéro atomique
 - Clic sur un élément → spawn au centre du workspace
-- Couleurs **CPK standard** (C gris, O rouge, N bleu, H blanc, etc.)
+- Couleurs **CPK standard** avec ajustements : H = `#FFFFFF` (blanc pur), C = `#3C3C3C` (charbon foncé) pour les différencier sur fond sombre
+- **Labels des atomes** : couleur calculée dynamiquement via luminance CPK — texte noir si la couleur est claire, blanc si sombre (`labelColor()` dans `WorkspaceComponent`)
 
 ### Fragments pré-faits débloquables
 - Grille **3×4** (12 fragments) dans la palette, au-dessus de la liste des éléments
@@ -75,6 +76,7 @@ Expérience web où l'utilisateur assemble librement des atomes dans un espace 2
 - **Cooldown après séparation** (`BOND_COOLDOWN_MS = 1200`) : quand une liaison est rompue, les deux atomes ne peuvent pas se re-lier pendant 1,2 s. La rupture applique aussi une impulsion de séparation (`BREAK_IMPULSE = 4`)
 - Liaisons multiples (N lignes parallèles) : offset `(i - (N-1)/2) × spacing` — générique, supporte au-delà du triple
 - Clic sur une liaison → suppression
+- **Double-clic sur un atome → suppression** (via `onAtomDblClick`)
 - Sélection d'un atome + Delete → suppression
 
 ### Deux modes de validation (togglables)
@@ -93,6 +95,7 @@ Expérience web où l'utilisateur assemble librement des atomes dans un espace 2
   - Molécule "célèbre" : fiche riche (nom, IUPAC, formule, poids moléculaire, usages)
   - Molécule "exploratoire" : fiche minimale (formule, SMILES)
 - Après ajout : `#fetchIsomerCount` fire-and-forget, wrappé dans `NgZone.run()`
+- **Toast de découverte** (`MoleculeCardComponent`) : notification compacte fixe `bottom: 72px; right: 20px`, 240px — badge, nom, formule. Bouton "View in collection →" navigue vers Collection et ouvre la fiche directement via `pendingOpen` input sur `CollectionComponent`
 
 ### Mode Défis
 - **Tab "Challenges"** dans la navigation principale (3ème onglet)
@@ -113,7 +116,8 @@ Expérience web où l'utilisateur assemble librement des atomes dans un espace 2
 - **Overlay `ChallengePlayerComponent`** : flottant sous la nav pill, visible uniquement en vue `workspace`, affiché si `activeChallengeId() || activeDailyMode()`
   - Barre active : nom du challenge, formule ou contraintes, boutons hints
   - État succès : bordure verte, 🎉, bouton "Back to Challenges"
-  - Hints : état **éphémère** (signal local, réinitialisé à chaque changement de challenge, non persisté)
+  - Hints : état **éphémère** (signal local, réinitialisé à chaque changement de challenge, non persisté). `hintsOpen` est un `model()` two-way bindé depuis `LabComponent` : **clic dans le workspace ferme le panel hints**, clic sur un bouton hint déjà utilisé le réouvre
+- **Page Challenges** : s'ouvre automatiquement sur le **dernier chapitre débloqué** au montage du composant (`ngOnInit` + `chapterStates().reverse().find(ch => ch.unlocked)`)
 - Progression persistée en LocalStorage : `completedChallengeIds[]`, `dailyCompletedDate`
 
 ### Collection (vue pleine page)
@@ -183,6 +187,13 @@ Expérience web où l'utilisateur assemble librement des atomes dans un espace 2
 - ✅ Fragments SMARTS-based unlock, 12 fragments en grille 3×4, bouton œil
 - ✅ Physique : suppression attraction inter-atomique, cooldown après rupture de liaison
 - ✅ Navigation 3 tabs (Lab / Challenges / Collection)
+- ✅ Correction SMILES cycliques (ring closure DFS deux passes) — benzène, cyclopropane, hétérocycles
+- ✅ Toast de découverte en bas à droite (remplace la popup modale plein écran)
+- ✅ Hints défis masquables via clic workspace, réouvrables au clic sur le bouton hint
+- ✅ Page Challenges auto-ouvre le dernier chapitre débloqué
+- ✅ Double-clic atome → suppression
+- ✅ Recherche éléments priorise les symboles avant les noms
+- ✅ Couleurs H/C ajustées (H blanc pur, C charbon foncé) + labels atomes couleur dynamique par luminance
 
 ### V5
 - Partage de constructions via URL
@@ -197,6 +208,7 @@ Expérience web où l'utilisateur assemble librement des atomes dans un espace 2
 - Initialisation asynchrone avec progress signal, écran de chargement
 - **SMILES builder** : tous les atomes en notation brackettée `[Symbol]` — les atomes hors organic subset OpenSMILES (ex: `H`, `Na`) ne sont pas valides sans crochets
 - **Ordre DFS** : écrire les branches `(...)` AVANT la continuation de la chaîne principale
+- **SMILES cycliques** : algorithme deux passes dans `#buildSmiles` — (1) pre-pass DFS détecte les back-edges et assigne les numéros de ring closure (`ringOpens` Map), (2) DFS principale saute les back-edges et ajoute les suffixes de fermeture. Le bond char de la liaison est placé à l'atome ancêtre (ouverture du ring). Corrige benzène, cyclopropane, pyridine, caféine, et toute molécule cyclique
 - **`hasSubstructure(molSmiles, smarts)`** : utilise `get_qmol()` + `get_substruct_match()`, retourne `match !== '{}'` — utilisé pour fragments unlock et daily challenges
 
 ### Moteur de physique 2D
@@ -243,7 +255,7 @@ Expérience web où l'utilisateur assemble librement des atomes dans un espace 2
 - `src/app/models/challenge.ts` : interfaces `ChallengeDef`, `ChapterDef`, `DailyChallengeDef`, `DailyConstraint`
 - `src/app/lib/challenges.ts` : données statiques — `CHAPTERS[]`, `DAILY_CHALLENGES[]`, `getDailyChallenge()`, `findChallengeById()`, `isDailyCompleted()`
 - Store (`app-state.store.ts`) : `completedChallengeIds signal<string[]>` + `dailyCompletedDate signal<string|null>` persistés en LocalStorage. **Hints non persistés** — état éphémère local au `ChallengePlayerComponent`
-- `ChallengePlayerComponent` : `challengeId`, `dailyActive`, `dailyDef`, `success` comme `input()` signals. Hints : `signal(0)` local + `effect({ allowSignalWrites: true })` pour reset sur changement de challenge
+- `ChallengePlayerComponent` : `challengeId`, `dailyActive`, `dailyDef`, `success` comme `input()` signals. `hintsOpen` comme `model()` two-way bindé depuis `LabComponent`. Hints : `signal(0)` local + `effect({ allowSignalWrites: true })` pour reset + fermeture du panel sur changement de challenge
 - Détection dans `scanMolecules()` : boucle séparée AVANT la collection, calcule `getCanonicalSmiles()` directement sur chaque groupe complet, compare avec tous les `targetSmiles` et toutes les contraintes daily — indépendant de `alreadyKnown`
 
 ### Emojis et compatibilité Windows 10
@@ -276,7 +288,7 @@ src/app/
   ui/
     periodic-table/   → liste scrollable par catégorie + recherche + badge valence
     fragments/        → fragment-palette.component (grille 3×4, unlock SMARTS, bouton œil)
-    molecule-card/    → overlay découverte + bouton "View 3D"
+    molecule-card/    → toast de découverte (bas-droite, 240px) avec lien "View in collection"
     molecule-3d/      → molecule-3d-viewer.component (Three.js, lazy via @defer)
     challenges/
       challenges.component       → banner daily + liste chapitres accordéon + cards challenges
