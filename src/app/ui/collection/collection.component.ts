@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, output, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, signal, computed, output, input, effect, ChangeDetectionStrategy } from '@angular/core';
 import { AppStateStore } from '../../store/app-state.store';
 import { DiscoveredMolecule } from '../../models';
 import { MoleculeDetailComponent } from './molecule-detail.component';
@@ -360,6 +360,14 @@ export class CollectionComponent {
   readonly tab = signal<'famous' | 'exploratory'>('famous');
   readonly selected = signal<DiscoveredMolecule | null>(null);
   readonly view3d = output<DiscoveredMolecule>();
+  readonly pendingOpen = input<DiscoveredMolecule | null>(null);
+
+  readonly #openEffect = effect(() => {
+    const mol = this.pendingOpen();
+    if (!mol) return;
+    this.tab.set(mol.type === 'famous' ? 'famous' : 'exploratory');
+    this.selected.set(mol);
+  });
 
   readonly list = computed(() =>
     this.store.collection().filter(m => m.type === this.tab())

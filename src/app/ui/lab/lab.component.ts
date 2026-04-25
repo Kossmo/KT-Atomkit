@@ -33,6 +33,7 @@ export class LabComponent implements OnInit {
   readonly mainView = signal<'workspace' | 'challenges' | 'collection'>('workspace');
   readonly viewing3dMolecule = signal<DiscoveredMolecule | null>(null);
   readonly showInfo = signal(false);
+  readonly openMolecule = signal<DiscoveredMolecule | null>(null);
 
   readonly activeChallengeId = signal<string | null>(null);
   readonly activeDailyMode = signal(false);
@@ -85,6 +86,11 @@ export class LabComponent implements OnInit {
     this.activeChallengeId.set(null);
     this.challengeSuccess.set(false);
     this.mainView.set('workspace');
+  }
+
+  onOpenInCollection(mol: DiscoveredMolecule): void {
+    this.openMolecule.set(mol);
+    this.mainView.set('collection');
   }
 
   quitChallenge(): void {

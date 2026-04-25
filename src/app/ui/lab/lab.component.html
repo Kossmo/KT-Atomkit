@@ -2,7 +2,7 @@
   <app-loading [progress]="rdkit.loadProgress()" />
 }
 
-<app-molecule-card (view3d)="viewing3dMolecule.set($event)" />
+<app-molecule-card (openInCollection)="onOpenInCollection($event)" />
 
 @defer (when viewing3dMolecule() !== null) {
   @if (viewing3dMolecule(); as mol) {
@@ -46,7 +46,10 @@
     <!-- Collection page -->
     @if (mainView() === 'collection') {
       <div class="view-page">
-        <app-collection (view3d)="viewing3dMolecule.set($event)" />
+        <app-collection
+          [pendingOpen]="openMolecule()"
+          (view3d)="viewing3dMolecule.set($event)"
+        />
       </div>
     }
 
