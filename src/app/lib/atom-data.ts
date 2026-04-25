@@ -6,7 +6,7 @@ export const ELEMENTS: ElementData[] = [
   { atomicNumber: 3,  symbol: 'Li', name: 'Lithium',        cpkColor: '#CC80FF', valences: [1],          covalentRadius: 1.28, atomicMass: 6.941,   electronegativity: 0.98, category: 'alkali-metal' },
   { atomicNumber: 4,  symbol: 'Be', name: 'Beryllium',      cpkColor: '#C2FF00', valences: [2],          covalentRadius: 0.96, atomicMass: 9.012,   electronegativity: 1.57, category: 'alkaline-earth' },
   { atomicNumber: 5,  symbol: 'B',  name: 'Boron',          cpkColor: '#FFB5B5', valences: [3],          covalentRadius: 0.84, atomicMass: 10.811,  electronegativity: 2.04, category: 'metalloid' },
-  { atomicNumber: 6,  symbol: 'C',  name: 'Carbon',         cpkColor: '#909090', valences: [4],          covalentRadius: 0.77, atomicMass: 12.011,  electronegativity: 2.55, category: 'nonmetal' },
+  { atomicNumber: 6,  symbol: 'C',  name: 'Carbon',         cpkColor: '#3C3C3C', valences: [4],          covalentRadius: 0.77, atomicMass: 12.011,  electronegativity: 2.55, category: 'nonmetal' },
   { atomicNumber: 7,  symbol: 'N',  name: 'Nitrogen',       cpkColor: '#3050F8', valences: [3],          covalentRadius: 0.75, atomicMass: 14.007,  electronegativity: 3.04, category: 'nonmetal' },
   { atomicNumber: 8,  symbol: 'O',  name: 'Oxygen',         cpkColor: '#FF0D0D', valences: [2],          covalentRadius: 0.73, atomicMass: 15.999,  electronegativity: 3.44, category: 'nonmetal' },
   { atomicNumber: 9,  symbol: 'F',  name: 'Fluorine',       cpkColor: '#90E050', valences: [1],          covalentRadius: 0.71, atomicMass: 18.998,  electronegativity: 3.98, category: 'halogen' },

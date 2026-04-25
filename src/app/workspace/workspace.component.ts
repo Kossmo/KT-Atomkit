@@ -44,6 +44,15 @@ export class WorkspaceComponent implements OnInit, OnDestroy {
 
   atomRadius(atom: AtomNode): number { return this.ws.atomRadius(atom); }
 
+  labelColor(atom: AtomNode): string {
+    const hex = atom.element.cpkColor.replace('#', '');
+    const r = parseInt(hex.slice(0, 2), 16) / 255;
+    const g = parseInt(hex.slice(2, 4), 16) / 255;
+    const b = parseInt(hex.slice(4, 6), 16) / 255;
+    const lum = (0.299 * r + 0.587 * g + 0.114 * b) * 0.85; // account for brightness filter
+    return lum > 0.45 ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.9)';
+  }
+
   bondPaths(bond: Bond): string[] {
     const a = this.store.atoms().get(bond.atomA);
     const b = this.store.atoms().get(bond.atomB);

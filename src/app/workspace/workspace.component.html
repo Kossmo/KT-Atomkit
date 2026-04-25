@@ -32,7 +32,7 @@
           [attr.r]="atomRadius(atom)"
           [attr.fill]="atom.element.cpkColor"
         />
-        <text class="atom-label" dy="0.35em">{{ atom.element.symbol }}</text>
+        <text class="atom-label" dy="0.35em" [attr.fill]="labelColor(atom)">{{ atom.element.symbol }}</text>
       </g>
     }
   </g>
