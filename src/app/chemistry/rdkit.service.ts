@@ -99,35 +99,75 @@ export class RdkitService {
 
   #buildSmiles(atoms: AtomNode[], bonds: Bond[]): string {
     if (atoms.length === 0) return '';
-    if (atoms.length === 1) return atoms[0].element.symbol;
+    if (atoms.length === 1) return `[${atoms[0].element.symbol}]`;
 
-    const adjacency = new Map<string, string[]>();
-    for (const atom of atoms) adjacency.set(atom.id, []);
+    type AdjEntry = { neighbor: string; bond: Bond };
+    const adj = new Map<string, AdjEntry[]>();
+    for (const atom of atoms) adj.set(atom.id, []);
     for (const bond of bonds) {
-      adjacency.get(bond.atomA)?.push(bond.atomB);
-      adjacency.get(bond.atomB)?.push(bond.atomA);
+      adj.get(bond.atomA)?.push({ neighbor: bond.atomB, bond });
+      adj.get(bond.atomB)?.push({ neighbor: bond.atomA, bond });
     }
 
+    // Pre-pass: detect ring-closure back-edges, assign ring closure numbers.
+    // For each back-edge (descendant → ancestor), put bond char at the ancestor
+    // (opening digit) so the ring closure bond type is encoded there.
+    const backEdgeIds = new Set<string>();
+    const ringOpens = new Map<string, { num: number; bondChar: string }[]>();
+    let ringCounter = 0;
+    const preVisited = new Set<string>();
+    const inStack = new Set<string>();
+
+    const findRings = (id: string, parentId: string | null) => {
+      preVisited.add(id);
+      inStack.add(id);
+      for (const { neighbor, bond } of adj.get(id) ?? []) {
+        if (neighbor === parentId) continue;
+        if (inStack.has(neighbor) && !backEdgeIds.has(bond.id)) {
+          backEdgeIds.add(bond.id);
+          ringCounter++;
+          const bc = bond.type === 'double' ? '=' : bond.type === 'triple' ? '#' : '';
+          if (!ringOpens.has(neighbor)) ringOpens.set(neighbor, []);
+          if (!ringOpens.has(id)) ringOpens.set(id, []);
+          ringOpens.get(neighbor)!.push({ num: ringCounter, bondChar: bc });
+          ringOpens.get(id)!.push({ num: ringCounter, bondChar: '' });
+        } else if (!preVisited.has(neighbor)) {
+          findRings(neighbor, id);
+        }
+      }
+      inStack.delete(id);
+    };
+
+    findRings(atoms[0].id, null);
+
+    // Lookup maps to avoid repeated linear scans in the DFS
+    const atomById = new Map(atoms.map(a => [a.id, a]));
+    const bondByPair = new Map<string, Bond>();
+    for (const bond of bonds) {
+      bondByPair.set(`${bond.atomA}|${bond.atomB}`, bond);
+      bondByPair.set(`${bond.atomB}|${bond.atomA}`, bond);
+    }
+
+    // Main DFS: build SMILES string, skipping back-edges (already encoded as ring closures)
     const visited = new Set<string>();
+    const dfs = (id: string, parentId: string | null): string => {
+      visited.add(id);
+      const atom = atomById.get(id)!;
+      const parentBond = parentId ? bondByPair.get(`${id}|${parentId}`) : null;
+      const bondChar = parentBond?.type === 'double' ? '=' : parentBond?.type === 'triple' ? '#' : '';
+      const closureSuffix = (ringOpens.get(id) ?? [])
+        .map(c => c.bondChar + (c.num > 9 ? `%${c.num}` : `${c.num}`))
+        .join('');
 
-    const dfs = (atomId: string, parentId: string | null): string => {
-      visited.add(atomId);
-      const atom = atoms.find(a => a.id === atomId)!;
-      const neighbors = (adjacency.get(atomId) ?? []).filter(n => !visited.has(n));
-      const bond = parentId ? bonds.find(b =>
-        (b.atomA === atomId && b.atomB === parentId) ||
-        (b.atomB === atomId && b.atomA === parentId)
-      ) : null;
-
-      const bondChar = bond?.type === 'double' ? '=' : bond?.type === 'triple' ? '#' : '';
       // All atoms in brackets = no implicit H added by RDKit (we specify bonds explicitly)
-      let smi = bondChar + '[' + atom.element.symbol + ']';
-
-      if (neighbors.length === 0) return smi;
-      const [first, ...rest] = neighbors;
+      let smi = bondChar + '[' + atom.element.symbol + ']' + closureSuffix;
       // Branches before main-chain continuation — otherwise "OH(H)" instead of "O(H)H"
-      for (const n of rest) smi += `(${dfs(n, atomId)})`;
-      smi += dfs(first, atomId);
+      const unvisited = (adj.get(id) ?? [])
+        .filter(({ neighbor, bond }) => !visited.has(neighbor) && !backEdgeIds.has(bond.id));
+      if (!unvisited.length) return smi;
+      const [first, ...rest] = unvisited;
+      for (const { neighbor } of rest) smi += `(${dfs(neighbor, id)})`;
+      smi += dfs(first.neighbor, id);
       return smi;
     };
 

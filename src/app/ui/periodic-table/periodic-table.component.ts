@@ -44,11 +44,18 @@ export class PeriodicTableComponent {
 
   readonly filtered = computed(() => {
     const q = this.query().toLowerCase().trim();
-    return q ? ELEMENTS.filter(e =>
-      e.symbol.toLowerCase().startsWith(q) ||
-      e.name.toLowerCase().includes(q) ||
-      String(e.atomicNumber).startsWith(q)
-    ) : null;
+    if (!q) return null;
+    return ELEMENTS
+      .filter(e =>
+        e.symbol.toLowerCase().startsWith(q) ||
+        e.name.toLowerCase().includes(q) ||
+        String(e.atomicNumber).startsWith(q)
+      )
+      .sort((a, b) => {
+        const aSymbol = a.symbol.toLowerCase().startsWith(q);
+        const bSymbol = b.symbol.toLowerCase().startsWith(q);
+        return aSymbol === bSymbol ? 0 : aSymbol ? -1 : 1;
+      });
   });
 
   readonly groups = computed((): ElementGroup[] => {

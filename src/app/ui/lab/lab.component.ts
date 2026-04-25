@@ -38,6 +38,7 @@ export class LabComponent implements OnInit {
   readonly activeDailyMode = signal(false);
   readonly challengeSuccess = signal(false);
   readonly dailyDef = getDailyChallenge();
+  readonly hintsOpen = signal(false);
 
   readonly #ws = inject(WorkspaceService);
   readonly #audio = inject(AudioService);

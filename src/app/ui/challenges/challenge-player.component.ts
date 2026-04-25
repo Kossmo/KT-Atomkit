@@ -1,4 +1,4 @@
-import { Component, output, computed, input, signal, effect, ChangeDetectionStrategy } from '@angular/core';
+import { Component, output, computed, input, model, signal, effect, ChangeDetectionStrategy } from '@angular/core';
 import { ChallengeDef, DailyChallengeDef } from '../../models/challenge';
 import { findChallengeById } from '../../lib/challenges';
 
@@ -41,9 +41,9 @@ import { findChallengeById } from '../../lib/challenges';
                 <button
                   class="hint-btn"
                   [class.used]="hintsUsedCount() > $index"
-                  [disabled]="hintsUsedCount() > $index"
-                  (click)="useHint($index)"
-                  [title]="hintsUsedCount() > $index ? hint.label + ' revealed' : 'Reveal: ' + hint.label"
+                  [class.open]="hintsUsedCount() > $index && hintsOpen()"
+                  (click)="hintsUsedCount() > $index ? hintsOpen.set(!hintsOpen()) : useHint($index)"
+                  [title]="hintsUsedCount() > $index ? (hintsOpen() ? 'Hide hints' : 'Show hints') : 'Reveal: ' + hint.label"
                 >
                   {{ hintsUsedCount() > $index ? hint.label : '💡 ' + hint.label }}
                 </button>
@@ -67,7 +67,7 @@ import { findChallengeById } from '../../lib/challenges';
 
       <!-- Hint panel (shown below player when hints revealed) -->
       @if (!success() && challenge(); as c) {
-        @if (hintsUsedCount() > 0) {
+        @if (hintsOpen() && hintsUsedCount() > 0) {
           <div class="hint-panel">
             @for (hint of c.hints.slice(0, hintsUsedCount()); track $index) {
               <div class="hint-item">
@@ -217,12 +217,25 @@ import { findChallengeById } from '../../lib/challenges';
         border-color: rgba(255 200 60 / 0.5);
       }
 
-      &.used, &[disabled] {
-        opacity: 0.45;
-        cursor: default;
+      &.used {
+        opacity: 0.5;
         background: transparent;
-        color: rgba(255 255 255 / 0.3);
-        border-color: rgba(255 255 255 / 0.1);
+        color: rgba(255 255 255 / 0.35);
+        border-color: rgba(255 255 255 / 0.12);
+
+        &:hover {
+          opacity: 0.8;
+          background: rgba(255 255 255 / 0.06);
+          border-color: rgba(255 255 255 / 0.2);
+          color: rgba(255 255 255 / 0.6);
+        }
+
+        &.open {
+          opacity: 0.85;
+          background: rgba(255 200 60 / 0.08);
+          border-color: rgba(255 200 60 / 0.3);
+          color: rgba(255 200 60 / 0.7);
+        }
       }
     }
 
@@ -311,6 +324,7 @@ export class ChallengePlayerComponent {
   readonly success = input(false);
 
   readonly quit = output<void>();
+  readonly hintsOpen = model(false);
 
   readonly challenge = computed(() => {
     const id = this.challengeId();
@@ -326,6 +340,7 @@ export class ChallengePlayerComponent {
   readonly #resetHints = effect(() => {
     this.challengeId();
     this.#hintsUsed.set(0);
+    this.hintsOpen.set(false);
   }, { allowSignalWrites: true });
 
   readonly hintsUsedCount = computed(() => this.#hintsUsed());
@@ -333,6 +348,7 @@ export class ChallengePlayerComponent {
   useHint(index: number): void {
     if (this.hintsUsedCount() <= index) {
       this.#hintsUsed.update(n => n + 1);
+      this.hintsOpen.set(true);
     }
   }
 }

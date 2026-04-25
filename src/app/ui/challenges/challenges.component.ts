@@ -1,4 +1,4 @@
-import { Component, output, inject, computed, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, output, inject, computed, signal, ChangeDetectionStrategy } from '@angular/core';
 import { AppStateStore } from '../../store/app-state.store';
 import { CHAPTERS, DAILY_CHALLENGES, getDailyChallenge, isDailyCompleted } from '../../lib/challenges';
 import { ChallengeDef } from '../../models/challenge';
@@ -338,7 +338,7 @@ import { ChallengeDef } from '../../models/challenge';
     }
   `],
 })
-export class ChallengesComponent {
+export class ChallengesComponent implements OnInit {
   readonly startChallenge = output<ChallengeDef>();
   readonly startDaily = output<void>();
 
@@ -347,6 +347,11 @@ export class ChallengesComponent {
   readonly dailyDone = computed(() => isDailyCompleted(this.#store.dailyCompletedDate()));
   readonly todayLabel = computed(() => new Date().toLocaleDateString('en', { month: 'short', day: 'numeric' }));
   readonly openChapterId = signal<string | null>('ch1');
+
+  ngOnInit(): void {
+    const lastUnlocked = [...this.chapterStates()].reverse().find(ch => ch.unlocked);
+    if (lastUnlocked) this.openChapterId.set(lastUnlocked.id);
+  }
 
   readonly chapterStates = computed(() => {
     const completed = this.#store.completedChallengeIds();

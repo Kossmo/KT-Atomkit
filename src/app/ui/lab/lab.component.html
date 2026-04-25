@@ -39,7 +39,7 @@
   <main class="playground">
 
     <!-- Workspace — always mounted to preserve state -->
-    <div class="view-workspace" [class.hidden]="mainView() !== 'workspace'">
+    <div class="view-workspace" [class.hidden]="mainView() !== 'workspace'" (click)="hintsOpen.set(false)">
       <app-workspace />
     </div>
 
@@ -85,6 +85,7 @@
       [dailyActive]="activeDailyMode()"
       [dailyDef]="dailyDef"
       [success]="challengeSuccess()"
+      [(hintsOpen)]="hintsOpen"
       (quit)="quitChallenge()"
     />
   }

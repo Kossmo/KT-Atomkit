@@ -89,6 +89,11 @@ export class WorkspaceComponent implements OnInit, OnDestroy {
     if (Math.hypot(dx, dy) < 5) this.ws.toggleSelect(atom.id);
   }
 
+  onAtomDblClick(e: MouseEvent, atom: AtomNode): void {
+    e.stopPropagation();
+    this.ws.removeAtom(atom.id);
+  }
+
   onBondClick(e: MouseEvent, bond: Bond): void {
     e.stopPropagation();
     this.ws.removeBond(bond.id);

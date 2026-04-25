@@ -25,6 +25,7 @@
         [attr.transform]="'translate(' + atom.x + ',' + atom.y + ')'"
         (mousedown)="onAtomMouseDown($event, atom)"
         (click)="onAtomClick($event, atom)"
+        (dblclick)="onAtomDblClick($event, atom)"
       >
         <circle
           class="atom-circle"
