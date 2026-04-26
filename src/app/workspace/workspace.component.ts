@@ -61,13 +61,26 @@ export class WorkspaceComponent implements OnInit, OnDestroy {
     const dx = b.x - a.x;
     const dy = b.y - a.y;
     const len = Math.sqrt(dx * dx + dy * dy) || 1;
-    const px = -dy / len;
-    const py =  dx / len;
+    const nx = dx / len;
+    const ny = dy / len;
+
+    // Trim line endpoints to atom surfaces so bonds are visible on large atoms
+    const rA = this.atomRadius(a);
+    const rB = this.atomRadius(b);
+    if (len <= rA + rB + 1) return [];
+
+    const x1 = a.x + nx * rA;
+    const y1 = a.y + ny * rA;
+    const x2 = b.x - nx * rB;
+    const y2 = b.y - ny * rB;
+
+    const px = -ny;
+    const py =  nx;
     const spacing = 3.5;
     const n = bond.order;
 
     const line = (offset: number) =>
-      `M ${a.x + px * offset} ${a.y + py * offset} L ${b.x + px * offset} ${b.y + py * offset}`;
+      `M ${x1 + px * offset} ${y1 + py * offset} L ${x2 + px * offset} ${y2 + py * offset}`;
 
     return Array.from({ length: n }, (_, i) => line((i - (n - 1) / 2) * spacing));
   }

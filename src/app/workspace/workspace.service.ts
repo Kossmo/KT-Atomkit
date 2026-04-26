@@ -131,7 +131,7 @@ export class WorkspaceService {
   }
 
   atomRadius(atom: AtomNode): number {
-    return Math.max(10, atom.element.covalentRadius * ATOM_RADIUS_BASE);
+    return Math.min(20, Math.max(10, atom.element.covalentRadius * ATOM_RADIUS_BASE));
   }
 
   #upgradeBond(bond: Bond): void {
