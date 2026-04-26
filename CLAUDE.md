@@ -95,7 +95,12 @@ Expérience web où l'utilisateur assemble librement des atomes dans un espace 2
   - Molécule "célèbre" : fiche riche (nom, IUPAC, formule, poids moléculaire, usages)
   - Molécule "exploratoire" : fiche minimale (formule, SMILES)
 - Après ajout : `#fetchIsomerCount` fire-and-forget, wrappé dans `NgZone.run()`
-- **Toast de découverte** (`MoleculeCardComponent`) : notification compacte fixe `bottom: 72px; right: 20px`, 240px — badge, nom, formule. Bouton "View in collection →" navigue vers Collection et ouvre la fiche directement via `pendingOpen` input sur `CollectionComponent`
+- **Stack de notifications** (`MoleculeCardComponent`) : jusqu'à 5 toasts empilées `bottom: 72px; right: 20px`, 240px, `z-index: 200`
+  - Container `position: fixed; display: flex; flex-direction: column-reverse; gap: 8px` — premier élément DOM = position visuelle basse
+  - Toutes les cartes affichent badge + nom + formule ; seule la carte active (i=0, en bas) a le bouton close et le footer "View in collection →"
+  - Dégradé d'opacité bas→haut : `1.0 → 0.82 → 0.65 → 0.50 → 0.38`
+  - Bouton **"Clear all (N)"** : premier dans le DOM (donc visuellement en dessous de toutes les toasts), visible dès 2+ notifications en attente — appelle `store.clearDiscoveries()`
+  - `z-index: 200` obligatoire : `.lab-layout` a `position: relative; overflow: hidden` ce qui crée un stacking context qui peindrait par-dessus le container sans z-index explicite
 
 ### Mode Défis
 - **Tab "Challenges"** dans la navigation principale (3ème onglet)
@@ -189,6 +194,7 @@ Expérience web où l'utilisateur assemble librement des atomes dans un espace 2
 - ✅ Navigation 3 tabs (Lab / Challenges / Collection)
 - ✅ Correction SMILES cycliques (ring closure DFS deux passes) — benzène, cyclopropane, hétérocycles
 - ✅ Toast de découverte en bas à droite (remplace la popup modale plein écran)
+- ✅ Stack de notifications : jusqu'à 5 toasts empilées avec dégradé d'opacité + bouton "Clear all"
 - ✅ Hints défis masquables via clic workspace, réouvrables au clic sur le bouton hint
 - ✅ Page Challenges auto-ouvre le dernier chapitre débloqué
 - ✅ Double-clic atome → suppression
@@ -254,7 +260,7 @@ Expérience web où l'utilisateur assemble librement des atomes dans un espace 2
 ### Mode Défis — détails techniques
 - `src/app/models/challenge.ts` : interfaces `ChallengeDef`, `ChapterDef`, `DailyChallengeDef`, `DailyConstraint`
 - `src/app/lib/challenges.ts` : données statiques — `CHAPTERS[]`, `DAILY_CHALLENGES[]`, `getDailyChallenge()`, `findChallengeById()`, `isDailyCompleted()`
-- Store (`app-state.store.ts`) : `completedChallengeIds signal<string[]>` + `dailyCompletedDate signal<string|null>` persistés en LocalStorage. **Hints non persistés** — état éphémère local au `ChallengePlayerComponent`
+- Store (`app-state.store.ts`) : `completedChallengeIds signal<string[]>` + `dailyCompletedDate signal<string|null>` persistés en LocalStorage. **Hints non persistés** — état éphémère local au `ChallengePlayerComponent`. `pendingDiscoveries` : `pushDiscovery()` / `dismissDiscovery()` / `clearDiscoveries()` pour la pile de notifications
 - `ChallengePlayerComponent` : `challengeId`, `dailyActive`, `dailyDef`, `success` comme `input()` signals. `hintsOpen` comme `model()` two-way bindé depuis `LabComponent`. Hints : `signal(0)` local + `effect({ allowSignalWrites: true })` pour reset + fermeture du panel sur changement de challenge
 - Détection dans `scanMolecules()` : boucle séparée AVANT la collection, calcule `getCanonicalSmiles()` directement sur chaque groupe complet, compare avec tous les `targetSmiles` et toutes les contraintes daily — indépendant de `alreadyKnown`
 
@@ -288,7 +294,7 @@ src/app/
   ui/
     periodic-table/   → liste scrollable par catégorie + recherche + badge valence
     fragments/        → fragment-palette.component (grille 3×4, unlock SMARTS, bouton œil)
-    molecule-card/    → toast de découverte (bas-droite, 240px) avec lien "View in collection"
+    molecule-card/    → stack de notifications (bas-droite, 240px, max 5, dégradé opacité, clear all)
     molecule-3d/      → molecule-3d-viewer.component (Three.js, lazy via @defer)
     challenges/
       challenges.component       → banner daily + liste chapitres accordéon + cards challenges
