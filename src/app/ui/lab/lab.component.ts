@@ -48,6 +48,10 @@ export class LabComponent implements OnInit {
   readonly #zone = inject(NgZone);
 
   #scanTimer: ReturnType<typeof setTimeout> | null = null;
+
+  readonly #clearPendingOpen = effect(() => {
+    if (this.mainView() !== 'collection') this.openMolecule.set(null);
+  }, { allowSignalWrites: true });
   // Canonical forms of challenge targetSmiles as RDKit-JS actually outputs them.
   // Populated once after RDKit loads — avoids string-literal mismatches (e.g. 'OC=O' vs 'O=CO').
   readonly #canonicalTargets = new Map<string, string>();

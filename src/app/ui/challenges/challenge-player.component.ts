@@ -40,12 +40,12 @@ import { findChallengeById } from '../../lib/challenges';
               @for (hint of c.hints; track $index) {
                 <button
                   class="hint-btn"
-                  [class.used]="hintsUsedCount() > $index"
-                  [class.open]="hintsUsedCount() > $index && hintsOpen()"
-                  (click)="hintsUsedCount() > $index ? hintsOpen.set(!hintsOpen()) : useHint($index)"
-                  [title]="hintsUsedCount() > $index ? (hintsOpen() ? 'Hide hints' : 'Show hints') : 'Reveal: ' + hint.label"
+                  [class.used]="isHintUsed($index)"
+                  [class.open]="isHintUsed($index) && hintsOpen()"
+                  (click)="isHintUsed($index) ? hintsOpen.set(!hintsOpen()) : useHint($index)"
+                  [title]="isHintUsed($index) ? (hintsOpen() ? 'Hide hints' : 'Show hints') : 'Reveal: ' + hint.label"
                 >
-                  {{ hintsUsedCount() > $index ? hint.label : '💡 ' + hint.label }}
+                  {{ isHintUsed($index) ? hint.label : '💡 ' + hint.label }}
                 </button>
               }
             }
@@ -69,7 +69,7 @@ import { findChallengeById } from '../../lib/challenges';
       @if (!success() && challenge(); as c) {
         @if (hintsOpen() && hintsUsedCount() > 0) {
           <div class="hint-panel">
-            @for (hint of c.hints.slice(0, hintsUsedCount()); track $index) {
+            @for (hint of c.hints.filter((_, i) => isHintUsed(i)); track $index) {
               <div class="hint-item">
                 <span class="hint-label">{{ hint.label }}</span>
                 @if (hint.content === 'img' && c.targetCid) {
@@ -335,19 +335,21 @@ export class ChallengePlayerComponent {
     this.dailyActive() ? this.dailyDef() : null
   );
 
-  readonly #hintsUsed = signal(0);
+  readonly #hintsUsed = signal(new Set<number>());
 
   readonly #resetHints = effect(() => {
     this.challengeId();
-    this.#hintsUsed.set(0);
+    this.#hintsUsed.set(new Set());
     this.hintsOpen.set(false);
   }, { allowSignalWrites: true });
 
-  readonly hintsUsedCount = computed(() => this.#hintsUsed());
+  isHintUsed(index: number): boolean {
+    return this.#hintsUsed().has(index);
+  }
 
   useHint(index: number): void {
-    if (this.hintsUsedCount() <= index) {
-      this.#hintsUsed.update(n => n + 1);
+    if (!this.isHintUsed(index)) {
+      this.#hintsUsed.update(s => new Set([...s, index]));
       this.hintsOpen.set(true);
     }
   }

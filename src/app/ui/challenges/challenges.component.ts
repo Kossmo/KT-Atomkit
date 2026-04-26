@@ -8,6 +8,7 @@ import { ChallengeDef } from '../../models/challenge';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="challenges-page">
+      <div class="challenges-inner">
 
       <!-- Daily challenge banner -->
       <div class="daily-banner" [class.done]="dailyDone()">
@@ -79,6 +80,7 @@ import { ChallengeDef } from '../../models/challenge';
         }
       </div>
 
+      </div><!-- /.challenges-inner -->
     </div>
   `,
   styles: [`
@@ -87,11 +89,14 @@ import { ChallengeDef } from '../../models/challenge';
       inset: 52px 0 0 0;
       overflow-y: auto;
       padding: 16px;
+    }
+
+    .challenges-inner {
+      max-width: 680px;
+      margin: 0 auto;
       display: flex;
       flex-direction: column;
       gap: 12px;
-      max-width: 680px;
-      margin: 0 auto;
     }
 
     // ── Daily banner ──────────────────────────────────────────────────────
