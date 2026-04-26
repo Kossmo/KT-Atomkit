@@ -93,7 +93,9 @@ function classify(formula: string): Family {
                   <p class="card-desc">{{ m.description }}</p>
                 }
                 @if (m.isomerCount && m.isomerCount > 1) {
-                  <div class="card-isomers">{{ discoveredIsomers(m.formula) }} of {{ m.isomerCount.toLocaleString() }} known {{ m.formula }} isomers</div>
+                  <div class="card-isomers" title="Includes constitutional isomers, stereoisomers, and radical forms — not all are buildable in this sandbox">
+                    {{ discoveredIsomers(m.formula) }} of {{ m.isomerCount.toLocaleString() }} known {{ m.formula }} structures*
+                  </div>
                 }
                 <div class="card-hint">
                   @if (m.cid) { <span class="has-3d">3D</span> }
@@ -325,6 +327,7 @@ function classify(formula: string): Family {
       color: rgba(255 255 255 / 0.2);
       font-style: italic;
       letter-spacing: 0.01em;
+      cursor: help;
     }
 
     .open-label {

@@ -205,6 +205,9 @@ Expérience web où l'utilisateur assemble librement des atomes dans un espace 2
 - Partage de constructions via URL
 - Mode galerie
 
+### V6 — Idées futures
+- **Support des radicaux / spin** : certaines molécules (O₂, S₂, NO) ont un état fondamental biradical non représentable en Lewis classique. Permettre aux atomes d'avoir des électrons libres visibles (·), ce qui ouvrirait la construction de formes radicalaires. Implique : modifier le modèle de valence, l'UI (placement d'électrons libres), la génération SMILES radicalaires (`[S]`, `[O]`, `[CH2]`…), et la détection de challenges. Le compteur d'isomères PubChem deviendrait alors exact pour ces cas (actuellement affiché avec `*` + tooltip pour indiquer l'inclusion de radicaux et stéréoisomères).
+
 ## Points d'attention techniques
 
 ### RDKit-WASM
