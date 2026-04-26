@@ -48,6 +48,9 @@ export class LabComponent implements OnInit {
   readonly #zone = inject(NgZone);
 
   #scanTimer: ReturnType<typeof setTimeout> | null = null;
+  // Canonical forms of challenge targetSmiles as RDKit-JS actually outputs them.
+  // Populated once after RDKit loads — avoids string-literal mismatches (e.g. 'OC=O' vs 'O=CO').
+  readonly #canonicalTargets = new Map<string, string>();
 
   readonly #autoScan = effect(() => {
     this.store.bonds();
@@ -58,6 +61,12 @@ export class LabComponent implements OnInit {
 
   async ngOnInit(): Promise<void> {
     await this.rdkit.load();
+    for (const ch of CHAPTERS) {
+      for (const c of ch.challenges) {
+        const canonical = this.rdkit.canonicalize(c.targetSmiles);
+        this.#canonicalTargets.set(c.targetSmiles, canonical ?? c.targetSmiles);
+      }
+    }
   }
 
   onElementSelected(element: ElementData): void {
@@ -140,7 +149,8 @@ export class LabComponent implements OnInit {
         // Chapter challenges
         for (const chapter of CHAPTERS) {
           for (const challenge of chapter.challenges) {
-            if (!this.store.completedChallengeIds().includes(challenge.id) && smiles === challenge.targetSmiles) {
+            const target = this.#canonicalTargets.get(challenge.targetSmiles) ?? challenge.targetSmiles;
+            if (!this.store.completedChallengeIds().includes(challenge.id) && smiles === target) {
               this.store.completeChallenge(challenge.id);
               if (this.activeChallengeId() === challenge.id && !this.challengeSuccess()) {
                 this.challengeSuccess.set(true);

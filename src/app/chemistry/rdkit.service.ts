@@ -81,6 +81,19 @@ export class RdkitService {
     }
   }
 
+  canonicalize(smiles: string): string | null {
+    if (!this.#rdkit) return null;
+    try {
+      const mol = this.#rdkit.get_mol(smiles);
+      if (!mol?.is_valid()) { mol?.delete(); return null; }
+      const canonical = mol.get_smiles();
+      mol.delete();
+      return canonical;
+    } catch {
+      return null;
+    }
+  }
+
   hasSubstructure(molSmiles: string, smarts: string): boolean {
     if (!this.#rdkit) return false;
     try {
