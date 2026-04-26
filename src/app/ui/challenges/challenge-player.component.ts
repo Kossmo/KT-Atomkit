@@ -41,9 +41,9 @@ import { findChallengeById } from '../../lib/challenges';
                 <button
                   class="hint-btn"
                   [class.used]="isHintUsed($index)"
-                  [class.open]="isHintUsed($index) && hintsOpen()"
-                  (click)="isHintUsed($index) ? hintsOpen.set(!hintsOpen()) : useHint($index)"
-                  [title]="isHintUsed($index) ? (hintsOpen() ? 'Hide hints' : 'Show hints') : 'Reveal: ' + hint.label"
+                  [class.open]="isHintVisible($index)"
+                  (click)="isHintUsed($index) ? toggleHint($index) : useHint($index)"
+                  [title]="isHintUsed($index) ? (isHintVisible($index) ? 'Hide ' + hint.label : 'Show ' + hint.label) : 'Reveal: ' + hint.label"
                 >
                   {{ isHintUsed($index) ? hint.label : '💡 ' + hint.label }}
                 </button>
@@ -67,9 +67,9 @@ import { findChallengeById } from '../../lib/challenges';
 
       <!-- Hint panel (shown below player when hints revealed) -->
       @if (!success() && challenge(); as c) {
-        @if (hintsOpen() && hintsUsedCount() > 0) {
+        @if (anyVisible()) {
           <div class="hint-panel">
-            @for (hint of c.hints.filter((_, i) => isHintUsed(i)); track $index) {
+            @for (hint of c.hints.filter((_, i) => isHintVisible(i)); track $index) {
               <div class="hint-item">
                 <span class="hint-label">{{ hint.label }}</span>
                 @if (hint.content === 'img' && c.targetCid) {
@@ -335,22 +335,39 @@ export class ChallengePlayerComponent {
     this.dailyActive() ? this.dailyDef() : null
   );
 
-  readonly #hintsUsed = signal(new Set<number>());
+  readonly #hintsUsed    = signal(new Set<number>());
+  readonly #hintsVisible = signal(new Set<number>());
 
   readonly #resetHints = effect(() => {
     this.challengeId();
     this.#hintsUsed.set(new Set());
+    this.#hintsVisible.set(new Set());
     this.hintsOpen.set(false);
   }, { allowSignalWrites: true });
 
-  isHintUsed(index: number): boolean {
-    return this.#hintsUsed().has(index);
-  }
+  // Parent sets hintsOpen=false (workspace click) → hide all hints
+  readonly #watchClose = effect(() => {
+    if (!this.hintsOpen()) this.#hintsVisible.set(new Set());
+  }, { allowSignalWrites: true });
+
+  readonly hintsUsedCount = computed(() => this.#hintsUsed().size);
+  readonly anyVisible     = computed(() => this.#hintsVisible().size > 0);
+
+  isHintUsed(index: number): boolean    { return this.#hintsUsed().has(index); }
+  isHintVisible(index: number): boolean { return this.#hintsVisible().has(index); }
 
   useHint(index: number): void {
-    if (!this.isHintUsed(index)) {
-      this.#hintsUsed.update(s => new Set([...s, index]));
-      this.hintsOpen.set(true);
-    }
+    if (!this.isHintUsed(index)) this.#hintsUsed.update(s => new Set([...s, index]));
+    this.#hintsVisible.update(s => new Set([...s, index]));
+    this.hintsOpen.set(true);
+  }
+
+  toggleHint(index: number): void {
+    this.#hintsVisible.update(s => {
+      const next = new Set(s);
+      next.has(index) ? next.delete(index) : next.add(index);
+      return next;
+    });
+    this.hintsOpen.set(this.#hintsVisible().size > 0);
   }
 }
