@@ -7,49 +7,68 @@ import { DiscoveredMolecule } from '../../models';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (show()) {
-      @let m = molecule()!;
-      <div class="toast" role="status">
-        <div class="toast-top">
-          <span class="badge" [class.famous]="m.type === 'famous'">
-            {{ m.type === 'famous' ? '★ Famous' : '◇ Novel' }}
-          </span>
-          <button class="close-btn" (click)="dismiss()">×</button>
-        </div>
-
-        <div class="toast-body">
-          <div class="mol-name">{{ displayName(m) }}</div>
-          <div class="mol-formula">{{ m.formula }}</div>
-        </div>
-
-        <div class="toast-footer">
-          @if (remaining() > 0) {
-            <span class="more-badge">+{{ remaining() }} more</span>
-          }
-          <button class="view-btn" (click)="openCollection(m)">
-            View in collection →
+      <div class="toast-stack">
+        @if (stackItems().length > 1) {
+          <button class="clear-btn" (click)="store.clearDiscoveries()">
+            Clear all ({{ store.pendingDiscoveries().length }})
           </button>
-        </div>
+        }
+        @for (item of stackItems(); track item.id; let i = $index) {
+          <div class="toast" [style.opacity]="cardOpacity(i)" [style.pointer-events]="i === 0 ? 'auto' : 'none'">
+            <div class="toast-top">
+              <span class="badge" [class.famous]="item.type === 'famous'">
+                {{ item.type === 'famous' ? '★ Famous' : '◇ Novel' }}
+              </span>
+              @if (i === 0) {
+                <button class="close-btn" (click)="dismiss()">×</button>
+              }
+            </div>
+
+            <div class="toast-body">
+              <div class="mol-name">{{ displayName(item) }}</div>
+              <div class="mol-formula">{{ item.formula }}</div>
+            </div>
+
+            @if (i === 0) {
+              <div class="toast-footer">
+                @if (extra() > 0) {
+                  <span class="more-badge">+{{ extra() }} more</span>
+                }
+                <button class="view-btn" (click)="openCollection(item)">
+                  View in collection →
+                </button>
+              </div>
+            }
+          </div>
+        }
       </div>
     }
   `,
   styles: [`
-    .toast {
+    /* column-reverse: first item (i=0, active) anchors at bottom, others stack upward */
+    .toast-stack {
       position: fixed;
       bottom: 72px;
       right: 20px;
       width: 240px;
+      z-index: 200;
+      display: flex;
+      flex-direction: column-reverse;
+      gap: 8px;
+      animation: stack-enter 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes stack-enter {
+      from { translate: 16px 0; opacity: 0; }
+    }
+
+    .toast {
       background: #18181c;
       border: 1px solid rgba(255 255 255 / 0.1);
       border-radius: 10px;
       overflow: hidden;
-      z-index: 150;
-      animation: slide-in 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
       box-shadow: 0 8px 32px rgba(0 0 0 / 0.5);
-    }
-
-    @keyframes slide-in {
-      from { transform: translateX(20px); opacity: 0; }
-      to   { transform: translateX(0); opacity: 1; }
+      transition: opacity 0.3s ease;
     }
 
     .toast-top {
@@ -138,14 +157,40 @@ import { DiscoveredMolecule } from '../../models';
 
       &:hover { color: #aad4ff; }
     }
+
+    .clear-btn {
+      width: 100%;
+      padding: 6px 0;
+      background: none;
+      border: 1px solid rgba(255 255 255 / 0.08);
+      border-radius: 8px;
+      color: rgba(255 255 255 / 0.3);
+      font-size: 10px;
+      font-family: inherit;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+
+      &:hover {
+        background: rgba(255 255 255 / 0.06);
+        border-color: rgba(255 255 255 / 0.15);
+        color: rgba(255 255 255 / 0.6);
+      }
+    }
   `],
 })
 export class MoleculeCardComponent {
   readonly store = inject(AppStateStore);
   readonly openInCollection = output<DiscoveredMolecule>();
+
   readonly show = computed(() => this.store.pendingDiscoveries().length > 0);
-  readonly molecule = computed(() => this.store.pendingDiscoveries()[0] ?? null);
-  readonly remaining = computed(() => Math.max(0, this.store.pendingDiscoveries().length - 1));
+  readonly stackItems = computed(() => this.store.pendingDiscoveries().slice(0, 5));
+  readonly extra = computed(() => Math.max(0, this.store.pendingDiscoveries().length - 5));
+
+  cardOpacity(i: number): number {
+    return ([1, 0.82, 0.65, 0.5, 0.38] as const)[i] ?? 0.38;
+  }
 
   displayName(m: DiscoveredMolecule): string {
     return m.commonName ?? m.iupacName ?? m.formula;

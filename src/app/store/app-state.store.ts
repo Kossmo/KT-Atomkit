@@ -78,6 +78,10 @@ export class AppStateStore {
     this.pendingDiscoveries.update(list => list.slice(1));
   }
 
+  clearDiscoveries(): void {
+    this.pendingDiscoveries.set([]);
+  }
+
   addToCollection(molecule: DiscoveredMolecule): void {
     if (this.collection().some(m => m.smiles === molecule.smiles)) return;
     this.collection.update(list => [molecule, ...list]);
