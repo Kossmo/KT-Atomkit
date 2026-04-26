@@ -8,11 +8,6 @@ import { DiscoveredMolecule } from '../../models';
   template: `
     @if (show()) {
       <div class="toast-stack">
-        @if (stackItems().length > 1) {
-          <button class="clear-btn" (click)="store.clearDiscoveries()">
-            Clear all ({{ store.pendingDiscoveries().length }})
-          </button>
-        }
         @for (item of stackItems(); track item.id; let i = $index) {
           <div class="toast" [style.opacity]="cardOpacity(i)" [style.pointer-events]="i === 0 ? 'auto' : 'none'">
             <div class="toast-top">
@@ -41,11 +36,16 @@ import { DiscoveredMolecule } from '../../models';
             }
           </div>
         }
+        @if (stackItems().length > 1) {
+          <button class="clear-btn" (click)="store.clearDiscoveries()">
+            Clear all ({{ store.pendingDiscoveries().length }})
+          </button>
+        }
       </div>
     }
   `,
   styles: [`
-    /* column-reverse: first item (i=0, active) anchors at bottom, others stack upward */
+    /* column-reverse: newest (i=0, active) anchors at bottom, older items stack upward, clear-btn floats at top */
     .toast-stack {
       position: fixed;
       bottom: 72px;

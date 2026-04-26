@@ -71,7 +71,7 @@ export class AppStateStore {
   readonly isDiscovering = signal(false);
 
   pushDiscovery(m: DiscoveredMolecule): void {
-    this.pendingDiscoveries.update(list => [...list, m]);
+    this.pendingDiscoveries.update(list => [m, ...list]);
   }
 
   dismissDiscovery(): void {
