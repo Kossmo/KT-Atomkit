@@ -201,6 +201,22 @@ export class WorkspaceService {
       }
     }
 
+    // Union-find to identify connected molecules — intra-molecule repulsion uses
+    // a very short range (overlap prevention only); inter-molecule uses full range.
+    const ufParent = new Map<string, string>();
+    for (const a of atoms) ufParent.set(a.id, a.id);
+    const ufFind = (id: string): string => {
+      let root = id;
+      while (ufParent.get(root) !== root) root = ufParent.get(root)!;
+      let cur = id;
+      while (cur !== root) { const next = ufParent.get(cur)!; ufParent.set(cur, root); cur = next; }
+      return root;
+    };
+    for (const bond of this.#store.bonds().values()) {
+      const ra = ufFind(bond.atomA), rb = ufFind(bond.atomB);
+      if (ra !== rb) ufParent.set(ra, rb);
+    }
+
     const freeValences = this.#store.freeValences();
     const forces = new Map<string, { fx: number; fy: number }>();
     for (const a of atoms) forces.set(a.id, { fx: 0, fy: 0 });
@@ -253,8 +269,11 @@ export class WorkspaceService {
           continue;
         }
 
-        // Repulsion between all atoms
-        if (dist < ATOM_RADIUS_BASE * 5) {
+        // Repulsion: short-range only within the same molecule (prevents overlap),
+        // full-range between different molecules.
+        const sameMolecule = ufFind(a.id) === ufFind(b.id);
+        const repelCutoff = sameMolecule ? ATOM_RADIUS_BASE * 2 : ATOM_RADIUS_BASE * 5;
+        if (dist < repelCutoff) {
           const f = REPEL_FORCE / (dist * dist);
           forces.get(a.id)!.fx -= nx * f;
           forces.get(a.id)!.fy -= ny * f;
