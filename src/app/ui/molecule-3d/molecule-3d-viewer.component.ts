@@ -67,7 +67,7 @@ const EL_MAP = new Map(ELEMENTS.map(e => [e.atomicNumber, e]));
     }
 
     .modal {
-      background: #0e0e12;
+      background: #0a0a10;
       border: 1px solid rgba(255 255 255 / 0.08);
       border-radius: 14px;
       width: min(720px, calc(100vw - 32px));
@@ -133,12 +133,22 @@ const EL_MAP = new Map(ELEMENTS.map(e => [e.atomicNumber, e]));
         width: 100%;
         height: 100%;
       }
+
+      /* Vignette overlay — closes the edges without touching Three.js */
+      &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(8, 8, 16, 0.6) 100%);
+        pointer-events: none;
+        z-index: 1;
+      }
     }
 
     .state {
       position: absolute;
       inset: 0;
-      background: #0d0d0f;
+      background: #08080f;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -146,6 +156,7 @@ const EL_MAP = new Map(ELEMENTS.map(e => [e.atomicNumber, e]));
       gap: 10px;
       color: rgba(255 255 255 / 0.35);
       font-size: 13px;
+      z-index: 2;
 
       &.unavailable { gap: 6px; }
 
@@ -232,25 +243,24 @@ export class Molecule3dViewerComponent implements AfterViewInit, OnDestroy {
     this.#renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
     this.#renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.#renderer.setSize(w, h, false);
-    this.#renderer.setClearColor(0x0d0d0f);
+    this.#renderer.setClearColor(0x08080f);
+    this.#renderer.outputColorSpace = THREE.SRGBColorSpace;
 
     this.#scene = new THREE.Scene();
-    this.#camera = new THREE.PerspectiveCamera(45, w / h, 0.01, 1000);
+
+    this.#camera = new THREE.PerspectiveCamera(40, w / h, 0.01, 200);
     this.#camera.position.set(0, 0, 8);
 
-    this.#scene.add(new THREE.AmbientLight(0xffffff, 0.4));
-    const dl = new THREE.DirectionalLight(0xffffff, 0.9);
-    dl.position.set(5, 10, 7);
-    this.#scene.add(dl);
-    const fill = new THREE.DirectionalLight(0x8899ff, 0.2);
-    fill.position.set(-5, -3, -5);
-    this.#scene.add(fill);
+    this.#scene.add(new THREE.AmbientLight(0xffffff, 1.8));
+    this.#scene.add(new THREE.HemisphereLight(0xaabbdd, 0x332244, 0.9));
+
+    this.#addStarfield();
 
     this.#controls = new OrbitControls(this.#camera, canvas);
     this.#controls.enableDamping = true;
-    this.#controls.dampingFactor = 0.08;
+    this.#controls.dampingFactor = 0.06;
     this.#controls.autoRotate = true;
-    this.#controls.autoRotateSpeed = 1.0;
+    this.#controls.autoRotateSpeed = 0.8;
 
     this.#resizeObserver = new ResizeObserver(() => {
       const nw = wrap.clientWidth;
@@ -265,6 +275,29 @@ export class Molecule3dViewerComponent implements AfterViewInit, OnDestroy {
     this.#zone.runOutsideAngular(() => this.#animate());
   }
 
+  #addStarfield(): void {
+    const count = 420;
+    const pos = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      // Uniform sphere distribution — stars fill the background evenly
+      const r = 22 + Math.random() * 28;
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos(2 * Math.random() - 1);
+      pos[i * 3]     = r * Math.sin(phi) * Math.cos(theta);
+      pos[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+      pos[i * 3 + 2] = r * Math.cos(phi);
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    const mat = new THREE.PointsMaterial({
+      color: 0xffffff, size: 0.045,
+      transparent: true, opacity: 0.38,
+      sizeAttenuation: true,
+    });
+    this.#scene.add(new THREE.Points(geo, mat));
+    this.#disposables.push(geo, mat);
+  }
+
   async #loadConformer(): Promise<void> {
     const mol = this.molecule();
     if (!mol.cid) { this.loading.set(false); return; }
@@ -277,20 +310,28 @@ export class Molecule3dViewerComponent implements AfterViewInit, OnDestroy {
   }
 
   #buildMolecule(conformer: Pubchem3dConformer): void {
-    const posMap = new Map<number, THREE.Vector3>();
+    const posMap   = new Map<number, THREE.Vector3>();
+    const colorMap = new Map<number, THREE.Color>();
 
     for (const atom of conformer.atoms) {
       const el = EL_MAP.get(atom.atomicNumber);
       const color = new THREE.Color(el?.cpkColor ?? '#cccccc');
+      colorMap.set(atom.id, color.clone());
       const r = el ? Math.max(0.18, el.covalentRadius * 0.45) : 0.28;
 
-      const geo = new THREE.SphereGeometry(r, 20, 20);
-      const mat = new THREE.MeshPhongMaterial({ color, shininess: 90 });
+      const geo = new THREE.SphereGeometry(r, 24, 24);
+      const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.82, metalness: 0 });
       const mesh = new THREE.Mesh(geo, mat);
       mesh.position.set(atom.x, atom.y, atom.z);
       this.#scene.add(mesh);
       posMap.set(atom.id, mesh.position.clone());
       this.#disposables.push(geo, mat);
+
+      if (el) {
+        const label = this.#makeLabelSprite(el.symbol, color, r);
+        label.position.set(atom.x, atom.y, atom.z);
+        this.#scene.add(label);
+      }
     }
 
     for (const bond of conformer.bonds) {
@@ -298,30 +339,59 @@ export class Molecule3dViewerComponent implements AfterViewInit, OnDestroy {
       const pA = posMap.get(bond.aid1);
       const pB = posMap.get(bond.aid2);
       if (!pA || !pB) continue;
-      this.#addBond(pA, pB, bond.order);
+      this.#addBond(pA, pB, bond.order, colorMap.get(bond.aid1), colorMap.get(bond.aid2));
     }
 
     this.#fitCamera(conformer);
   }
 
-  #addBond(pA: THREE.Vector3, pB: THREE.Vector3, order: number): void {
+  #addBond(pA: THREE.Vector3, pB: THREE.Vector3, order: number, cA?: THREE.Color, cB?: THREE.Color): void {
     const dir = new THREE.Vector3().subVectors(pB, pA);
     const len = dir.length();
     const mid = new THREE.Vector3().addVectors(pA, pB).multiplyScalar(0.5);
     const quat = new THREE.Quaternion().setFromUnitVectors(
       new THREE.Vector3(0, 1, 0), dir.clone().normalize()
     );
-    const bondR = order > 1 ? 0.045 : 0.06;
+    const bondR = order > 1 ? 0.04 : 0.055;
+    // Bond color: blend of the two atom colors, slightly lightened for visibility
+    const bondColor = cA && cB
+      ? cA.clone().lerp(cB, 0.5).lerp(new THREE.Color(1, 1, 1), 0.22)
+      : new THREE.Color(0xcccccc);
 
     for (const offset of this.#bondOffsets(order, dir)) {
       const geo = new THREE.CylinderGeometry(bondR, bondR, len, 8);
-      const mat = new THREE.MeshPhongMaterial({ color: 0xbbbbbb, shininess: 30 });
+      const mat = new THREE.MeshStandardMaterial({ color: bondColor, roughness: 0.85, metalness: 0 });
       const mesh = new THREE.Mesh(geo, mat);
       mesh.position.copy(mid).add(offset);
       mesh.quaternion.copy(quat);
       this.#scene.add(mesh);
       this.#disposables.push(geo, mat);
     }
+  }
+
+  #makeLabelSprite(symbol: string, atomColor: THREE.Color, radius: number): THREE.Sprite {
+    const size = 128;
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d')!;
+
+    // Text color based on CPK luminance — dark text on light atoms (H, S…), white on dark atoms
+    const lum = 0.2126 * atomColor.r + 0.7152 * atomColor.g + 0.0722 * atomColor.b;
+    const fontSize = symbol.length === 1 ? 64 : 48;
+    ctx.font = `bold ${fontSize}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = lum > 0.55 ? '#111111' : '#ffffff';
+    ctx.fillText(symbol, size / 2, size / 2);
+
+    const tex = new THREE.CanvasTexture(canvas);
+    const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false });
+    const sprite = new THREE.Sprite(mat);
+    const scale = Math.max(0.38, radius * 1.55);
+    sprite.scale.set(scale, scale, 1);
+    this.#disposables.push(tex, mat);
+    return sprite;
   }
 
   #bondOffsets(order: number, dir: THREE.Vector3): THREE.Vector3[] {
