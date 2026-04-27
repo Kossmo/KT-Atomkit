@@ -1,4 +1,5 @@
 import { Component, inject, signal, computed, output, input, effect, ChangeDetectionStrategy } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { AppStateStore } from '../../store/app-state.store';
 import { DiscoveredMolecule } from '../../models';
 import { MoleculeDetailComponent } from './molecule-detail.component';
@@ -32,7 +33,7 @@ function classify(formula: string): Family {
 @Component({
   selector: 'app-collection',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [MoleculeDetailComponent],
+  imports: [MoleculeDetailComponent, FormsModule],
   template: `
     <div class="collection">
 
@@ -69,12 +70,39 @@ function classify(formula: string): Family {
         </div>
       </div>
 
+      <div class="search-row">
+        <div class="search-wrap">
+          <input
+            type="search"
+            class="search-input"
+            placeholder="Search by name or formula…"
+            [ngModel]="searchQuery()"
+            (ngModelChange)="searchQuery.set($event)"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          @if (searchQuery()) {
+            <button class="search-clear" type="button" (click)="searchQuery.set('')">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <line x1="1" y1="1" x2="9" y2="9"/><line x1="9" y1="1" x2="1" y2="9"/>
+              </svg>
+            </button>
+          }
+        </div>
+      </div>
+
       <div class="grid-wrap">
         @if (list().length === 0) {
           <div class="empty">
-            <span class="empty-icon">{{ tab() === 'famous' ? '⬡' : '◇' }}</span>
-            <span>Nothing here yet.</span>
-            <span class="sub">Build molecules and scan to discover.</span>
+            @if (searchQuery()) {
+              <span class="empty-icon">⬡</span>
+              <span>No results for "{{ searchQuery() }}"</span>
+              <span class="sub">Try a different name or formula.</span>
+            } @else {
+              <span class="empty-icon">{{ tab() === 'famous' ? '⬡' : '◇' }}</span>
+              <span>Nothing here yet.</span>
+              <span class="sub">Build molecules and scan to discover.</span>
+            }
           </div>
         } @else {
           <div class="grid">
@@ -223,6 +251,55 @@ function classify(formula: string): Family {
       padding-bottom: 14px;
     }
 
+    // ── Search ────────────────────────────────────────────────────────
+
+    .search-row {
+      flex-shrink: 0;
+      padding: 0 24px 12px;
+    }
+
+    .search-wrap {
+      position: relative;
+      max-width: 360px;
+      margin: 0 auto;
+    }
+
+    .search-input {
+      width: 100%;
+      box-sizing: border-box;
+      background: rgba(255 255 255 / 0.04);
+      border: 1px solid rgba(255 255 255 / 0.08);
+      border-radius: 8px;
+      padding: 8px 30px 8px 12px;
+      color: rgba(255 255 255 / 0.85);
+      font-size: 12px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s;
+
+      &::placeholder { color: rgba(255 255 255 / 0.2); }
+      &:focus { border-color: rgba(255 255 255 / 0.2); }
+      &::-webkit-search-cancel-button { display: none; }
+    }
+
+    .search-clear {
+      position: absolute;
+      right: 8px;
+      top: 0;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      background: none;
+      border: none;
+      color: rgba(255 255 255 / 0.25);
+      font-size: 0;
+      cursor: pointer;
+      padding: 0 2px;
+      transition: color 0.15s;
+
+      &:hover { color: rgba(255 255 255 / 0.65); }
+    }
+
     // ── Grid ──────────────────────────────────────────────────────────
 
     .grid-wrap {
@@ -362,6 +439,7 @@ export class CollectionComponent {
   readonly store = inject(AppStateStore);
   readonly tab = signal<'famous' | 'exploratory'>('famous');
   readonly selected = signal<DiscoveredMolecule | null>(null);
+  readonly searchQuery = signal('');
   readonly view3d = output<DiscoveredMolecule>();
   readonly pendingOpen = input<DiscoveredMolecule | null>(null);
 
@@ -372,9 +450,16 @@ export class CollectionComponent {
     this.selected.set(mol);
   });
 
-  readonly list = computed(() =>
-    this.store.collection().filter(m => m.type === this.tab())
-  );
+  readonly list = computed(() => {
+    const q = this.searchQuery().toLowerCase().trim();
+    const base = this.store.collection().filter(m => m.type === this.tab());
+    if (!q) return base;
+    return base.filter(m =>
+      m.formula.toLowerCase().includes(q) ||
+      m.commonName?.toLowerCase().includes(q) ||
+      m.iupacName?.toLowerCase().includes(q)
+    );
+  });
 
   readonly pctFormulas = computed(() =>
     (this.store.famousCount() / 1_000_000 * 100).toFixed(4)
