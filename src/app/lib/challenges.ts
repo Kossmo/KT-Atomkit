@@ -160,7 +160,7 @@ export const CHAPTERS: ChapterDef[] = [
       {
         id: 'cyclopropane',
         targetSmiles: 'C1CC1',
-        targetCid: 6378,
+        targetCid: 6351,
         name: 'Cyclopropane',
         formula: 'C₃H₆',
         difficulty: 3,
