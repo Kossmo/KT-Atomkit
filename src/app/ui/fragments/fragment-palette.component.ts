@@ -1,4 +1,4 @@
-import { Component, output, inject, computed, signal, ChangeDetectionStrategy } from '@angular/core';
+﻿import { Component, output, inject, computed, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FragmentDef } from '../../models';
 import { FRAGMENTS } from '../../lib/fragments';
 import { AppStateStore } from '../../store/app-state.store';
@@ -68,7 +68,7 @@ import { RdkitService } from '../../chemistry/rdkit.service';
       align-items: center;
       justify-content: space-between;
       padding: 0 12px 5px;
-      font-size: 9px;
+      font-size: 10px;
       letter-spacing: 0.1em;
       text-transform: uppercase;
       color: rgba(255 255 255 / 0.25);
@@ -158,13 +158,13 @@ import { RdkitService } from '../../chemistry/rdkit.service';
     }
 
     .lock-icon {
-      font-size: 8px;
+      font-size: 9px;
       color: rgba(255 255 255 / 0.4);
       line-height: 1;
     }
 
     .frag-label {
-      font-size: 9px;
+      font-size: 10px;
       font-weight: 600;
       letter-spacing: -0.01em;
       white-space: nowrap;

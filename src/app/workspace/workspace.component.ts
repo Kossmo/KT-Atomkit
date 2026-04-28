@@ -121,12 +121,7 @@ export class WorkspaceComponent implements OnInit, OnDestroy {
     this.ws.removeBond(bond.id);
   }
 
-  @HostListener('document:keydown', ['$event'])
-  onKeyDown(e: KeyboardEvent): void {
-    if ((e.key === 'Delete' || e.key === 'Backspace') && this.ws.selectedAtomId()) {
-      this.ws.removeAtom(this.ws.selectedAtomId()!);
-    }
-  }
+
 
   #toSvg(clientX: number, clientY: number): { x: number; y: number } {
     const svg = this.svgRef.nativeElement;

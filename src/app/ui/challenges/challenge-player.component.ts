@@ -1,4 +1,4 @@
-import { Component, output, computed, input, model, signal, effect, ChangeDetectionStrategy } from '@angular/core';
+﻿import { Component, output, computed, input, model, signal, effect, ChangeDetectionStrategy } from '@angular/core';
 import { ChallengeDef, DailyChallengeDef } from '../../models/challenge';
 import { findChallengeById } from '../../lib/challenges';
 
@@ -153,7 +153,7 @@ import { findChallengeById } from '../../lib/challenges';
     }
 
     .player-label {
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 600;
       color: rgba(255 255 255 / 0.7);
       white-space: nowrap;
@@ -169,7 +169,7 @@ import { findChallengeById } from '../../lib/challenges';
     }
 
     .player-formula {
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 700;
       color: rgba(255 255 255 / 0.9);
       font-family: monospace;
@@ -184,7 +184,7 @@ import { findChallengeById } from '../../lib/challenges';
     }
 
     .mini-chip {
-      font-size: 9px;
+      font-size: 10px;
       padding: 1px 6px;
       border-radius: 20px;
       background: rgba(255 255 255 / 0.07);
@@ -205,7 +205,7 @@ import { findChallengeById } from '../../lib/challenges';
       border: 1px solid rgba(255 200 60 / 0.3);
       background: rgba(255 200 60 / 0.06);
       color: rgba(255 200 60 / 0.8);
-      font-size: 9px;
+      font-size: 10px;
       font-weight: 600;
       font-family: inherit;
       cursor: pointer;
@@ -252,7 +252,7 @@ import { findChallengeById } from '../../lib/challenges';
     .success-icon { font-size: 16px; }
 
     .success-text {
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 700;
       color: rgba(80 200 120 / 0.9);
       letter-spacing: 0.02em;
@@ -264,7 +264,7 @@ import { findChallengeById } from '../../lib/challenges';
       border: 1px solid rgba(80 200 120 / 0.4);
       background: rgba(80 200 120 / 0.1);
       color: rgba(80 200 120 / 0.9);
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 600;
       font-family: inherit;
       cursor: pointer;
@@ -295,7 +295,7 @@ import { findChallengeById } from '../../lib/challenges';
     }
 
     .hint-label {
-      font-size: 9px;
+      font-size: 10px;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.08em;
@@ -303,7 +303,7 @@ import { findChallengeById } from '../../lib/challenges';
     }
 
     .hint-text {
-      font-size: 11px;
+      font-size: 12px;
       color: rgba(255 255 255 / 0.6);
       line-height: 1.4;
     }

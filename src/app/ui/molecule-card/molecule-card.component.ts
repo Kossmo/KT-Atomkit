@@ -1,4 +1,4 @@
-import { Component, inject, computed, output, ChangeDetectionStrategy } from '@angular/core';
+﻿import { Component, inject, computed, output, ChangeDetectionStrategy } from '@angular/core';
 import { AppStateStore } from '../../store/app-state.store';
 import { DiscoveredMolecule } from '../../models';
 
@@ -79,7 +79,7 @@ import { DiscoveredMolecule } from '../../models';
     }
 
     .badge {
-      font-size: 9px;
+      font-size: 10px;
       font-weight: 700;
       letter-spacing: 0.08em;
       text-transform: uppercase;
@@ -114,7 +114,7 @@ import { DiscoveredMolecule } from '../../models';
     }
 
     .mol-name {
-      font-size: 14px;
+      font-size: 15px;
       font-weight: 500;
       color: #fff;
       white-space: nowrap;
@@ -123,7 +123,7 @@ import { DiscoveredMolecule } from '../../models';
     }
 
     .mol-formula {
-      font-size: 11px;
+      font-size: 12px;
       font-family: 'Courier New', monospace;
       color: rgba(255 255 255 / 0.4);
       margin-top: 2px;
@@ -139,7 +139,7 @@ import { DiscoveredMolecule } from '../../models';
     }
 
     .more-badge {
-      font-size: 9px;
+      font-size: 10px;
       color: rgba(255 255 255 / 0.25);
       letter-spacing: 0.04em;
       margin-right: auto;
@@ -149,7 +149,7 @@ import { DiscoveredMolecule } from '../../models';
       background: none;
       border: none;
       color: rgba(140 190 255 / 0.7);
-      font-size: 11px;
+      font-size: 12px;
       cursor: pointer;
       padding: 0;
       transition: color 0.15s;
@@ -165,7 +165,7 @@ import { DiscoveredMolecule } from '../../models';
       border: 1px solid rgba(255 255 255 / 0.08);
       border-radius: 8px;
       color: rgba(255 255 255 / 0.3);
-      font-size: 10px;
+      font-size: 11px;
       font-family: inherit;
       letter-spacing: 0.05em;
       text-transform: uppercase;

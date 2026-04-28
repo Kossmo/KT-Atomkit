@@ -1,4 +1,4 @@
-import {
+﻿import {
   Component, input, output, OnDestroy, AfterViewInit,
   ViewChild, ElementRef, signal, computed, inject, NgZone,
   ChangeDetectionStrategy,
@@ -106,7 +106,7 @@ const EL_MAP = new Map(ELEMENTS.map(e => [e.atomicNumber, e]));
     }
 
     .mol-formula {
-      font-size: 12px;
+      font-size: 13px;
       font-family: 'Courier New', monospace;
       color: rgba(255 255 255 / 0.35);
     }
@@ -155,13 +155,13 @@ const EL_MAP = new Map(ELEMENTS.map(e => [e.atomicNumber, e]));
       justify-content: center;
       gap: 10px;
       color: rgba(255 255 255 / 0.35);
-      font-size: 13px;
+      font-size: 14px;
       z-index: 2;
 
       &.unavailable { gap: 6px; }
 
       small {
-        font-size: 11px;
+        font-size: 12px;
         color: rgba(255 255 255 / 0.18);
       }
     }
@@ -186,7 +186,7 @@ const EL_MAP = new Map(ELEMENTS.map(e => [e.atomicNumber, e]));
     }
 
     .hint {
-      font-size: 10px;
+      font-size: 11px;
       color: rgba(255 255 255 / 0.18);
       letter-spacing: 0.04em;
     }

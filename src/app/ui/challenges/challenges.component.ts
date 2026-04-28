@@ -1,4 +1,4 @@
-import { Component, OnInit, output, inject, computed, signal, ChangeDetectionStrategy } from '@angular/core';
+﻿import { Component, OnInit, output, inject, computed, signal, ChangeDetectionStrategy } from '@angular/core';
 import { AppStateStore } from '../../store/app-state.store';
 import { CHAPTERS, DAILY_CHALLENGES, getDailyChallenge, isDailyCompleted } from '../../lib/challenges';
 import { ChallengeDef } from '../../models/challenge';
@@ -122,7 +122,7 @@ import { ChallengeDef } from '../../models/challenge';
     }
 
     .daily-tag {
-      font-size: 9px;
+      font-size: 10px;
       font-weight: 700;
       letter-spacing: 0.1em;
       text-transform: uppercase;
@@ -130,14 +130,14 @@ import { ChallengeDef } from '../../models/challenge';
     }
 
     .done-badge {
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 600;
       color: rgba(80 200 120 / 0.85);
       letter-spacing: 0.04em;
     }
 
     .daily-theme {
-      font-size: 15px;
+      font-size: 16px;
       font-weight: 700;
       color: rgba(255 255 255 / 0.88);
       margin-bottom: 4px;
@@ -145,7 +145,7 @@ import { ChallengeDef } from '../../models/challenge';
     }
 
     .daily-desc {
-      font-size: 11px;
+      font-size: 12px;
       color: rgba(255 255 255 / 0.4);
       line-height: 1.45;
       margin-bottom: 8px;
@@ -159,7 +159,7 @@ import { ChallengeDef } from '../../models/challenge';
     }
 
     .constraint-chip {
-      font-size: 9px;
+      font-size: 10px;
       font-weight: 600;
       padding: 2px 7px;
       border-radius: 20px;
@@ -176,7 +176,7 @@ import { ChallengeDef } from '../../models/challenge';
     }
 
     .difficulty {
-      font-size: 14px;
+      font-size: 15px;
       letter-spacing: 2px;
     }
 
@@ -186,7 +186,7 @@ import { ChallengeDef } from '../../models/challenge';
       border: 1px solid rgba(80 200 120 / 0.35);
       background: rgba(80 200 120 / 0.08);
       color: rgba(80 200 120 / 0.9);
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 600;
       font-family: inherit;
       letter-spacing: 0.05em;
@@ -231,23 +231,23 @@ import { ChallengeDef } from '../../models/challenge';
       &:hover { background: rgba(255 255 255 / 0.04); }
     }
 
-    .chapter-icon { font-size: 14px; flex-shrink: 0; }
+    .chapter-icon { font-size: 15px; flex-shrink: 0; }
 
     .chapter-title {
       flex: 1;
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 600;
       letter-spacing: 0.02em;
     }
 
     .chapter-progress {
-      font-size: 10px;
+      font-size: 11px;
       color: rgba(255 255 255 / 0.3);
       font-variant-numeric: tabular-nums;
     }
 
     .chapter-chevron {
-      font-size: 14px;
+      font-size: 15px;
       color: rgba(255 255 255 / 0.3);
       transition: transform 0.2s;
       flex-shrink: 0;
@@ -255,7 +255,7 @@ import { ChallengeDef } from '../../models/challenge';
       &.open { transform: rotate(90deg); }
     }
 
-    .lock-glyph { font-size: 10px; flex-shrink: 0; }
+    .lock-glyph { font-size: 11px; flex-shrink: 0; }
 
     .chapter-body {
       display: grid;
@@ -310,7 +310,7 @@ import { ChallengeDef } from '../../models/challenge';
       position: absolute;
       top: 9px;
       right: 10px;
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 700;
       color: rgba(80 200 120 / 0.8);
     }
@@ -324,7 +324,7 @@ import { ChallengeDef } from '../../models/challenge';
     }
 
     .card-name {
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 500;
       color: rgba(255 255 255 / 0.45);
       line-height: 1.3;
@@ -332,7 +332,7 @@ import { ChallengeDef } from '../../models/challenge';
 
     .card-stars {
       margin-top: auto;
-      font-size: 14px;
+      font-size: 15px;
       letter-spacing: 2px;
     }
 

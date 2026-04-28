@@ -1,4 +1,4 @@
-import {
+﻿import {
   Component, HostListener, OnInit, ChangeDetectionStrategy,
   inject, input, output, signal
 } from '@angular/core';
@@ -190,7 +190,7 @@ function classify(formula: string): Family {
     }
 
     .iupac-name {
-      font-size: 11px;
+      font-size: 12px;
       color: rgba(255 255 255 / 0.32);
       font-style: italic;
       margin-bottom: 10px;
@@ -200,7 +200,7 @@ function classify(formula: string): Family {
       display: flex;
       flex-wrap: wrap;
       gap: 6px 12px;
-      font-size: 11px;
+      font-size: 12px;
       color: rgba(255 255 255 / 0.28);
     }
 
@@ -222,7 +222,7 @@ function classify(formula: string): Family {
       }
 
       h3 {
-        font-size: 9px;
+        font-size: 10px;
         font-weight: 700;
         letter-spacing: 0.1em;
         text-transform: uppercase;
@@ -231,7 +231,7 @@ function classify(formula: string): Family {
       }
 
       p {
-        font-size: 13px;
+        font-size: 14px;
         line-height: 1.7;
         color: rgba(255 255 255 / 0.58);
         margin: 0;
@@ -239,7 +239,7 @@ function classify(formula: string): Family {
     }
 
     .wiki-loading {
-      font-size: 11px;
+      font-size: 12px;
       color: rgba(255 255 255 / 0.18);
       letter-spacing: 0.04em;
       padding: 8px 0;
@@ -248,7 +248,7 @@ function classify(formula: string): Family {
     .wiki-link {
       display: inline-block;
       margin-top: 8px;
-      font-size: 11px;
+      font-size: 12px;
       color: rgba(255 255 255 / 0.3);
       text-decoration: none;
       letter-spacing: 0.02em;
@@ -259,7 +259,7 @@ function classify(formula: string): Family {
     .smiles {
       display: block;
       font-family: 'Courier New', monospace;
-      font-size: 11px;
+      font-size: 12px;
       color: rgba(255 255 255 / 0.32);
       word-break: break-all;
       background: rgba(255 255 255 / 0.04);
@@ -283,7 +283,7 @@ function classify(formula: string): Family {
       border: 1px solid rgba(255 255 255 / 0.14);
       border-radius: 7px;
       color: rgba(255 255 255 / 0.62);
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 600;
       padding: 8px 18px;
       cursor: pointer;

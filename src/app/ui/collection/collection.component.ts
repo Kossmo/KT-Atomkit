@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, output, input, effect, ChangeDetectionStrategy } from '@angular/core';
+﻿import { Component, inject, signal, computed, output, input, effect, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AppStateStore } from '../../store/app-state.store';
 import { DiscoveredMolecule } from '../../models';
@@ -173,7 +173,7 @@ function classify(formula: string): Family {
       border: none;
       border-radius: 7px;
       color: rgba(255 255 255 / 0.35);
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 600;
       letter-spacing: 0.06em;
       text-transform: uppercase;
@@ -188,7 +188,7 @@ function classify(formula: string): Family {
     }
 
     .count {
-      font-size: 9px;
+      font-size: 10px;
       font-weight: 700;
       background: rgba(255 255 255 / 0.1);
       border-radius: 8px;
@@ -223,20 +223,20 @@ function classify(formula: string): Family {
       line-height: 1;
 
       &.pct {
-        font-size: 14px;
+        font-size: 15px;
         color: rgba(255 255 255 / 0.4);
         letter-spacing: -0.02em;
       }
     }
 
     .pct-sign {
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 400;
       color: rgba(255 255 255 / 0.25);
     }
 
     .stat-label {
-      font-size: 9px;
+      font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 0.08em;
       font-weight: 600;
@@ -272,7 +272,7 @@ function classify(formula: string): Family {
       border-radius: 8px;
       padding: 8px 30px 8px 12px;
       color: rgba(255 255 255 / 0.85);
-      font-size: 12px;
+      font-size: 13px;
       font-family: inherit;
       outline: none;
       transition: border-color 0.15s;
@@ -359,20 +359,20 @@ function classify(formula: string): Family {
     }
 
     .card-mw {
-      font-size: 10px;
+      font-size: 11px;
       color: rgba(255 255 255 / 0.22);
       white-space: nowrap;
       flex-shrink: 0;
     }
 
     .card-name {
-      font-size: 12px;
+      font-size: 13px;
       color: rgba(255 255 255 / 0.48);
       line-height: 1.3;
     }
 
     .card-desc {
-      font-size: 11px;
+      font-size: 12px;
       color: rgba(255 255 255 / 0.25);
       line-height: 1.5;
       margin: 0;
@@ -390,7 +390,7 @@ function classify(formula: string): Family {
     }
 
     .has-3d {
-      font-size: 9px;
+      font-size: 10px;
       font-weight: 700;
       letter-spacing: 0.06em;
       color: rgba(255 255 255 / 0.25);
@@ -400,7 +400,7 @@ function classify(formula: string): Family {
     }
 
     .card-isomers {
-      font-size: 10px;
+      font-size: 11px;
       color: rgba(255 255 255 / 0.2);
       font-style: italic;
       letter-spacing: 0.01em;
@@ -408,7 +408,7 @@ function classify(formula: string): Family {
     }
 
     .open-label {
-      font-size: 9px;
+      font-size: 10px;
       color: rgba(255 255 255 / 0.15);
       letter-spacing: 0.03em;
       margin-left: auto;
@@ -427,11 +427,11 @@ function classify(formula: string): Family {
       gap: 8px;
       padding: 60px 24px;
       color: rgba(255 255 255 / 0.18);
-      font-size: 13px;
+      font-size: 14px;
       text-align: center;
 
       .empty-icon { font-size: 32px; margin-bottom: 4px; opacity: 0.3; }
-      .sub { font-size: 11px; color: rgba(255 255 255 / 0.1); }
+      .sub { font-size: 12px; color: rgba(255 255 255 / 0.1); }
     }
   `],
 })
