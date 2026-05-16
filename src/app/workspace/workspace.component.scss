@@ -16,21 +16,27 @@
   &:active { cursor: grabbing; }
 }
 
-.bond-group {
+.bond-line {
+  fill: none;
+  stroke: rgba(255 255 255 / 0.4);
+  stroke-width: 2;
+  stroke-linecap: round;
+  transition: stroke 0.1s, stroke-width 0.1s;
+  pointer-events: none;        /* deco only — .bond-hit catches clicks */
+}
+
+.bond-deco.hover .bond-line {
+  stroke: rgba(255 100 100 / 0.75);
+  stroke-width: 2.5;
+}
+
+.bond-hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 14;            /* generous click target */
+  stroke-linecap: butt;
+  pointer-events: stroke;
   cursor: pointer;
-
-  .bond-line {
-    fill: none;
-    stroke: rgba(255 255 255 / 0.4);
-    stroke-width: 2;
-    stroke-linecap: round;
-    transition: stroke 0.1s;
-  }
-
-  &:hover .bond-line {
-    stroke: rgba(255 100 100 / 0.75);
-    stroke-width: 2.5;
-  }
 }
 
 .atom-group {

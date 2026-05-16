@@ -1,0 +1,197 @@
+import { Component, NgZone, OnInit, ChangeDetectionStrategy, effect, inject, signal, viewChild } from '@angular/core';
+import { MobileWorkspaceComponent } from './mobile-workspace.component';
+import { PeriodicTableComponent } from '../ui/periodic-table/periodic-table.component';
+import { LoadingComponent } from '../ui/loading/loading.component';
+import { MoleculeCardComponent } from '../ui/molecule-card/molecule-card.component';
+import { CollectionComponent } from '../ui/collection/collection.component';
+import { Molecule3dViewerComponent } from '../ui/molecule-3d/molecule-3d-viewer.component';
+import { FragmentPaletteComponent } from '../ui/fragments/fragment-palette.component';
+import { ChallengesComponent } from '../ui/challenges/challenges.component';
+import { ChallengePlayerComponent } from '../ui/challenges/challenge-player.component';
+import { MobileBottomSheetComponent } from './mobile-bottom-sheet.component';
+import { RdkitService } from '../chemistry/rdkit.service';
+import { MoleculeService } from '../chemistry/molecule.service';
+import { WorkspaceService } from '../workspace/workspace.service';
+import { AppStateStore } from '../store/app-state.store';
+import { AudioService } from '../audio/audio.service';
+import { PubchemService } from '../api/pubchem.service';
+import { ChallengeDef } from '../models/challenge';
+import { DiscoveredMolecule, ElementData, FragmentDef } from '../models';
+import { CHAPTERS, getDailyChallenge, isDailyCompleted } from '../lib/challenges';
+
+@Component({
+  selector: 'app-mobile-lab',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    MobileWorkspaceComponent, PeriodicTableComponent, LoadingComponent,
+    MoleculeCardComponent, CollectionComponent, Molecule3dViewerComponent,
+    FragmentPaletteComponent, ChallengesComponent, ChallengePlayerComponent,
+    MobileBottomSheetComponent,
+  ],
+  templateUrl: './mobile-lab.component.html',
+  styleUrl: './mobile-lab.component.scss',
+})
+export class MobileLabComponent implements OnInit {
+  readonly rdkit = inject(RdkitService);
+  readonly store = inject(AppStateStore);
+
+  readonly mainView = signal<'workspace' | 'challenges' | 'collection'>('workspace');
+  readonly viewing3dMolecule = signal<DiscoveredMolecule | null>(null);
+  readonly openMolecule = signal<DiscoveredMolecule | null>(null);
+
+  readonly activeChallengeId = signal<string | null>(null);
+  readonly activeDailyMode = signal(false);
+  readonly challengeSuccess = signal(false);
+  readonly dailyDef = getDailyChallenge();
+  readonly hintsOpen = signal(false);
+
+  readonly sheet = viewChild<MobileBottomSheetComponent>('sheet');
+
+  readonly #ws = inject(WorkspaceService);
+  readonly #audio = inject(AudioService);
+  readonly #molecule = inject(MoleculeService);
+  readonly #pubchem = inject(PubchemService);
+  readonly #zone = inject(NgZone);
+
+  #scanTimer: ReturnType<typeof setTimeout> | null = null;
+  readonly #canonicalTargets = new Map<string, string>();
+
+  readonly #clearPendingOpen = effect(() => {
+    if (this.mainView() !== 'collection') this.openMolecule.set(null);
+  }, { allowSignalWrites: true });
+
+  readonly #autoScan = effect(() => {
+    this.store.bonds();
+    this.store.mode();
+    if (this.#scanTimer !== null) clearTimeout(this.#scanTimer);
+    this.#scanTimer = setTimeout(() => this.scanMolecules(), 1200);
+  });
+
+  async ngOnInit(): Promise<void> {
+    await this.rdkit.load();
+    for (const ch of CHAPTERS) {
+      for (const c of ch.challenges) {
+        const canonical = this.rdkit.canonicalize(c.targetSmiles);
+        this.#canonicalTargets.set(c.targetSmiles, canonical ?? c.targetSmiles);
+      }
+    }
+  }
+
+  onElementSelected(element: ElementData): void {
+    this.#ws.spawnAtom(element);
+    this.#audio.playAtomSpawnSound();
+  }
+
+  onFragmentSelected(def: FragmentDef): void {
+    this.#ws.spawnFragment(def);
+    this.#audio.playAtomSpawnSound();
+  }
+
+  clearScene(): void { this.#ws.clearScene(); }
+
+  startChallenge(def: ChallengeDef): void {
+    this.#ws.clearScene();
+    this.activeChallengeId.set(def.id);
+    this.activeDailyMode.set(false);
+    this.challengeSuccess.set(false);
+    this.mainView.set('workspace');
+    queueMicrotask(() => this.sheet()?.setSnap('peek'));
+  }
+
+  startDailyChallenge(): void {
+    this.#ws.clearScene();
+    this.activeDailyMode.set(true);
+    this.activeChallengeId.set(null);
+    this.challengeSuccess.set(false);
+    this.mainView.set('workspace');
+    queueMicrotask(() => this.sheet()?.setSnap('peek'));
+  }
+
+  onOpenInCollection(mol: DiscoveredMolecule): void {
+    this.openMolecule.set(mol);
+    this.mainView.set('collection');
+  }
+
+  quitChallenge(): void {
+    this.activeChallengeId.set(null);
+    this.activeDailyMode.set(false);
+    this.challengeSuccess.set(false);
+    this.mainView.set('challenges');
+  }
+
+  challengeActive(): boolean {
+    return this.activeChallengeId() !== null || this.activeDailyMode();
+  }
+
+  #fetchIsomerCount(mol: DiscoveredMolecule): void {
+    if (mol.type !== 'famous') return;
+    this.#pubchem.getIsomerCount(mol.formula).then(count => {
+      if (count !== null) this.#zone.run(() => this.store.updateIsomerCount(mol.smiles, count));
+    });
+  }
+
+  async scanMolecules(): Promise<void> {
+    if (!this.rdkit.isReady() || this.store.isDiscovering()) return;
+    this.store.isDiscovering.set(true);
+
+    try {
+      const groups = this.#molecule.getConnectedGroups();
+      const complete = groups.filter(g => this.#molecule.isGroupComplete(g));
+      const alreadyKnown = new Set(this.store.collection().map(m => m.smiles));
+      const realModeOnly = this.store.mode() === 'real';
+
+      // Passive challenge detection
+      for (const group of complete) {
+        const groupIds = new Set(group.map(a => a.id));
+        const groupBonds = [...this.store.bonds().values()].filter(
+          b => groupIds.has(b.atomA) && groupIds.has(b.atomB)
+        );
+        const smiles = this.rdkit.getCanonicalSmiles(group, groupBonds);
+        if (!smiles) continue;
+
+        if (!isDailyCompleted(this.store.dailyCompletedDate())) {
+          if (this.dailyDef.constraints.every(c => this.rdkit.hasSubstructure(smiles, c.smarts))) {
+            this.store.completeDailyChallenge();
+            if (this.activeDailyMode() && !this.challengeSuccess()) {
+              this.challengeSuccess.set(true);
+              this.#audio.playChallengeSuccessSound();
+            }
+          }
+        }
+
+        for (const chapter of CHAPTERS) {
+          for (const challenge of chapter.challenges) {
+            const target = this.#canonicalTargets.get(challenge.targetSmiles) ?? challenge.targetSmiles;
+            if (!this.store.completedChallengeIds().includes(challenge.id) && smiles === target) {
+              this.store.completeChallenge(challenge.id);
+              if (this.activeChallengeId() === challenge.id && !this.challengeSuccess()) {
+                this.challengeSuccess.set(true);
+                this.#audio.playChallengeSuccessSound();
+              }
+            }
+          }
+        }
+      }
+
+      // Collection discovery
+      for (const group of complete) {
+        const discovered = await this.#molecule.discoverGroup(group);
+        if (!discovered) continue;
+        if (alreadyKnown.has(discovered.smiles)) continue;
+        if (realModeOnly && discovered.type === 'exploratory') continue;
+
+        this.store.addToCollection(discovered);
+        this.store.pushDiscovery(discovered);
+        this.#fetchIsomerCount(discovered);
+
+        if (discovered.type === 'famous') {
+          this.#audio.playDiscoveryFamousSound();
+        } else {
+          this.#audio.playDiscoveryExploratorySound();
+        }
+      }
+    } finally {
+      this.store.isDiscovering.set(false);
+    }
+  }
+}

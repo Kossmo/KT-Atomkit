@@ -1,0 +1,107 @@
+@if (!rdkit.isReady()) {
+  <app-loading [progress]="rdkit.loadProgress()" />
+}
+
+<app-molecule-card (openInCollection)="onOpenInCollection($event)" />
+
+@defer (when viewing3dMolecule() !== null) {
+  @if (viewing3dMolecule(); as mol) {
+    <app-molecule-3d-viewer [molecule]="mol" (closed)="viewing3dMolecule.set(null)" />
+  }
+}
+
+<div class="mlab-layout">
+
+  <!-- Top bar : nav (left) + quick actions (right) -->
+  <header class="topbar">
+    <nav class="main-nav">
+      <button [class.active]="mainView() === 'workspace'" (click)="mainView.set('workspace')">Lab</button>
+      <button [class.active]="mainView() === 'challenges'" (click)="mainView.set('challenges')">Chal.</button>
+      <button [class.active]="mainView() === 'collection'" (click)="mainView.set('collection')">
+        Coll.
+        @if (store.famousCount() + store.exploratoryCount(); as total) {
+          <span class="nav-count">{{ total }}</span>
+        }
+      </button>
+    </nav>
+
+    @if (mainView() === 'workspace') {
+      <div class="quick-actions">
+        <button
+          class="qa-btn"
+          [class.active]="store.showHydrogens()"
+          (click)="store.toggleHydrogens()"
+          title="Hydrogens"
+        >H</button>
+        <button
+          class="qa-btn mode-btn"
+          [class.real]="store.mode() === 'real'"
+          [class.exploratory]="store.mode() === 'exploratory'"
+          (click)="store.toggleMode()"
+        >{{ store.mode() === 'real' ? 'R' : 'E' }}</button>
+        <button class="qa-btn" (click)="store.toggleMuted()" title="Mute">
+          {{ store.muted() ? '♪' : '♫' }}
+        </button>
+        <button class="qa-btn danger" (click)="clearScene()" title="Clear">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+          </svg>
+        </button>
+      </div>
+    }
+  </header>
+
+  <!-- Workspace (always mounted) -->
+  <main class="playground">
+    <div class="view-workspace" [class.hidden]="mainView() !== 'workspace'">
+      <app-mobile-workspace (bgTap)="hintsOpen.set(false)" />
+    </div>
+
+    @if (mainView() === 'collection') {
+      <div class="view-page">
+        <app-collection
+          [pendingOpen]="openMolecule()"
+          (view3d)="viewing3dMolecule.set($event)"
+        />
+      </div>
+    }
+
+    @if (mainView() === 'challenges') {
+      <div class="view-page">
+        <app-challenges
+          (startChallenge)="startChallenge($event)"
+          (startDaily)="startDailyChallenge()"
+        />
+      </div>
+    }
+  </main>
+
+  <!-- Challenge player (top, under bar) -->
+  @if (challengeActive() && mainView() === 'workspace') {
+    <app-challenge-player
+      [challengeId]="activeChallengeId()"
+      [dailyActive]="activeDailyMode()"
+      [dailyDef]="dailyDef"
+      [success]="challengeSuccess()"
+      [(hintsOpen)]="hintsOpen"
+      (quit)="quitChallenge()"
+    />
+  }
+
+  <!-- Bottom sheet : Fragments + Elements (workspace view only) -->
+  @if (mainView() === 'workspace') {
+    <app-mobile-bottom-sheet #sheet>
+      <div class="sheet-inner">
+        <app-fragment-palette (fragmentSelected)="onFragmentSelected($event)" />
+        <app-periodic-table (elementSelected)="onElementSelected($event)" />
+        <div class="sheet-footer">
+          <span class="stat"><b>{{ store.famousCount() }}</b> famous</span>
+          <span class="stat-sep">·</span>
+          <span class="stat"><b>{{ store.exploratoryCount() }}</b> novel</span>
+        </div>
+      </div>
+    </app-mobile-bottom-sheet>
+  }
+
+</div>

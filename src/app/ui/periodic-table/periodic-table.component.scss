@@ -185,3 +185,10 @@
   color: rgba(255 255 255 / 0.25);
   text-align: center;
 }
+
+/* ── Mobile : 16px input to prevent iOS auto-zoom on focus ──────────── */
+@media (max-width: 768px) and (pointer: coarse) {
+  .search-input { font-size: 16px; padding: 9px 32px 9px 12px; }
+  .element-row { padding: 8px 12px; font-size: 14px; }
+  .el-symbol { font-size: 15px; }
+}

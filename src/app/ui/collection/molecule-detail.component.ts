@@ -3,6 +3,7 @@
   inject, input, output, signal
 } from '@angular/core';
 import { WikipediaService, WikiSummary } from '../../api/wikipedia.service';
+import { DeviceService } from '../../core/device.service';
 import { DiscoveredMolecule } from '../../models';
 
 type Family = 'hydrocarbon'|'organic-o'|'amine'|'halide'|'noble-gas'|'oxide'|'sulfur'|'other';
@@ -34,8 +35,12 @@ function classify(formula: string): Family {
   selector: 'app-molecule-detail',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="backdrop" (click)="closed.emit()">
-      <div class="modal" [style.--accent]="accent()" (click)="$event.stopPropagation()">
+    <div class="backdrop" [class.mobile]="isMobile()" (click)="closed.emit()">
+      <div class="modal" [class.mobile]="isMobile()" [style.--accent]="accent()" (click)="$event.stopPropagation()">
+
+        @if (isMobile()) {
+          <div class="sheet-grab"><div class="sheet-grab-bar"></div></div>
+        }
 
         <div class="modal-header">
           <button class="close-btn" (click)="closed.emit()" aria-label="Close">×</button>
@@ -110,6 +115,12 @@ function classify(formula: string): Family {
       animation: fade-in 0.2s ease;
     }
 
+    /* Mobile : sheet docked at bottom, no horizontal padding */
+    .backdrop.mobile {
+      padding: 0;
+      align-items: flex-end;
+    }
+
     @keyframes fade-in {
       from { opacity: 0; } to { opacity: 1; }
     }
@@ -133,7 +144,43 @@ function classify(formula: string): Family {
       to   { transform: translateY(0);    opacity: 1; }
     }
 
+    /* Mobile : bottom sheet — full width, rounded top corners, slides from bottom */
+    .modal.mobile {
+      max-width: 100%;
+      max-height: 92dvh;
+      border-radius: 16px 16px 0 0;
+      border-bottom: none;
+      padding-bottom: env(safe-area-inset-bottom, 0);
+      animation: slide-up-sheet 0.3s cubic-bezier(0.32, 0.72, 0.18, 1);
+    }
+
+    @keyframes slide-up-sheet {
+      from { transform: translateY(100%); }
+      to   { transform: translateY(0); }
+    }
+
+    .sheet-grab {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 0 4px;
+    }
+
+    .sheet-grab-bar {
+      width: 40px;
+      height: 4px;
+      border-radius: 2px;
+      background: rgba(255 255 255 / 0.25);
+    }
+
     // ── Header ────────────────────────────────────────────────────────
+
+    .modal.mobile .modal-header { padding: 16px 22px 16px; }
+    .modal.mobile .modal-body   { padding: 16px 22px; }
+    .modal.mobile .modal-footer { padding: 12px 22px calc(env(safe-area-inset-bottom, 0) + 12px); }
+    .modal.mobile .formula      { font-size: 26px; }
+    .modal.mobile .common-name  { font-size: 15px; }
 
     .modal-header {
       padding: 26px 28px 20px;
@@ -299,6 +346,8 @@ export class MoleculeDetailComponent implements OnInit {
   readonly view3d = output<DiscoveredMolecule>();
 
   readonly #wikipedia = inject(WikipediaService);
+  readonly #device = inject(DeviceService);
+  readonly isMobile = this.#device.isMobile;
 
   readonly wikiLoading = signal(false);
   readonly wiki = signal<WikiSummary | null>(null);

@@ -6,6 +6,38 @@ export class AudioService {
   readonly #store = inject(AppStateStore);
 
   #ctx: AudioContext | null = null;
+  #unlocked = false;
+
+  constructor() {
+    // iOS Safari only unlocks AudioContext from a synchronous user gesture.
+    // Discovery/challenge sounds fire from setTimeout/effects, so unlocking
+    // implicitly via #getCtx() in those paths fails. Register a one-shot
+    // pointerdown listener that wakes the context the first time the user
+    // touches the page.
+    if (typeof document !== 'undefined') {
+      const unlock = () => {
+        this.#unlock();
+        document.removeEventListener('pointerdown', unlock);
+        document.removeEventListener('touchstart', unlock);
+      };
+      document.addEventListener('pointerdown', unlock, { once: true });
+      document.addEventListener('touchstart', unlock, { once: true, passive: true });
+    }
+  }
+
+  #unlock(): void {
+    if (this.#unlocked) return;
+    try {
+      const ctx = this.#getCtx();
+      // Play an inaudible buffer — required on iOS even after resume()
+      const buffer = ctx.createBuffer(1, 1, 22050);
+      const src = ctx.createBufferSource();
+      src.buffer = buffer;
+      src.connect(ctx.destination);
+      src.start(0);
+      this.#unlocked = true;
+    } catch { /* AudioContext blocked — will retry on next user interaction */ }
+  }
 
   #getCtx(): AudioContext {
     if (!this.#ctx) this.#ctx = new AudioContext();

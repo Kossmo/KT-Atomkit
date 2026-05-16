@@ -314,6 +314,62 @@ import { findChallengeById } from '../../lib/challenges';
       max-width: 200px;
       height: auto;
       display: block;
+      align-self: center;
+    }
+
+    /* ── Mobile breakpoint ─────────────────────────────────────────────── */
+    @media (max-width: 768px) and (pointer: coarse) {
+      :host {
+        /* clear the topbar including iPhone notch */
+        top: calc(env(safe-area-inset-top, 0) + 56px);
+        left: 8px;
+        right: 8px;
+        transform: none;
+        width: auto;
+      }
+
+      .player {
+        min-width: 0;
+        max-width: none;
+        padding: 4px 6px;
+        gap: 6px;
+      }
+
+      /* Label can shrink with ellipsis — gives room to formula + hints */
+      .player-left {
+        flex: 1 1 auto;
+        min-width: 0;
+      }
+
+      .player-label {
+        font-size: 11px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        min-width: 0;
+      }
+
+      .player-center {
+        flex: 0 0 auto;       /* keep formula at its natural size */
+        min-width: 0;
+      }
+
+      .player-formula { font-size: 12px; }
+
+      /* Daily constraints — let chips wrap if needed but stay compact */
+      .player-constraints { flex-wrap: wrap; gap: 2px; justify-content: flex-end; }
+      .mini-chip { font-size: 9px; padding: 1px 5px; }
+
+      .hint-btn {
+        font-size: 10px;
+        padding: 3px 6px;
+        flex-shrink: 0;
+      }
+
+      .hint-panel { max-width: none; width: 100%; }
+
+      .success-text { font-size: 12px; }
+      .btn-done { font-size: 10px; padding: 3px 9px; }
     }
   `],
 })

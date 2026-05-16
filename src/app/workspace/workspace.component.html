@@ -6,10 +6,10 @@
   (mouseup)="onMouseUp()"
   (mouseleave)="onMouseUp()"
 >
-  <!-- Bonds -->
+  <!-- Bonds (visible decoration only — hit layer is rendered last) -->
   <g class="bonds-layer">
     @for (bond of visibleBonds(); track bond.id) {
-      <g class="bond-group" (click)="onBondClick($event, bond)">
+      <g class="bond-deco" [class.hover]="hoveredBondId() === bond.id">
         @for (path of bondPaths(bond); track $index) {
           <path class="bond-line" [attr.d]="path" />
         }
@@ -34,6 +34,19 @@
         />
         <text class="atom-label" dy="0.35em" [attr.fill]="labelColor(atom)">{{ atom.element.symbol }}</text>
       </g>
+    }
+  </g>
+
+  <!-- Bond hit layer — rendered last so wide hit area beats the atoms beneath it -->
+  <g class="bonds-hit-layer">
+    @for (bond of visibleBonds(); track bond.id) {
+      <path
+        class="bond-hit"
+        [attr.d]="bondHitPath(bond)"
+        (mouseenter)="hoveredBondId.set(bond.id)"
+        (mouseleave)="hoveredBondId.set(null)"
+        (click)="onBondClick($event, bond)"
+      />
     }
   </g>
 </svg>

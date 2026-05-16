@@ -1,6 +1,6 @@
 import {
   Component, OnInit, OnDestroy, inject, HostListener,
-  ChangeDetectionStrategy, computed, ViewChild, ElementRef
+  ChangeDetectionStrategy, computed, signal, ViewChild, ElementRef
 } from '@angular/core';
 import { WorkspaceService } from './workspace.service';
 import { AppStateStore } from '../store/app-state.store';
@@ -25,6 +25,7 @@ export class WorkspaceComponent implements OnInit, OnDestroy {
 
   readonly atomList = computed(() => [...this.store.atoms().values()]);
   readonly bondList = computed(() => [...this.store.bonds().values()]);
+  readonly hoveredBondId = signal<string | null>(null);
 
   readonly visibleAtoms = computed(() => {
     const list = this.atomList();
@@ -51,6 +52,22 @@ export class WorkspaceComponent implements OnInit, OnDestroy {
     const b = parseInt(hex.slice(4, 6), 16) / 255;
     const lum = (0.299 * r + 0.587 * g + 0.114 * b) * 0.85; // account for brightness filter
     return lum > 0.45 ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.9)';
+  }
+
+  /** Single straight line from atom A to atom B for the wide invisible hit area. */
+  bondHitPath(bond: Bond): string {
+    const a = this.store.atoms().get(bond.atomA);
+    const b = this.store.atoms().get(bond.atomB);
+    if (!a || !b) return '';
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const len = Math.sqrt(dx * dx + dy * dy) || 1;
+    const nx = dx / len;
+    const ny = dy / len;
+    const rA = this.atomRadius(a);
+    const rB = this.atomRadius(b);
+    if (len <= rA + rB + 1) return '';
+    return `M ${a.x + nx * rA} ${a.y + ny * rA} L ${b.x - nx * rB} ${b.y - ny * rB}`;
   }
 
   bondPaths(bond: Bond): string[] {

@@ -433,6 +433,42 @@ function classify(formula: string): Family {
       .empty-icon { font-size: 32px; margin-bottom: 4px; opacity: 0.3; }
       .sub { font-size: 12px; color: rgba(255 255 255 / 0.1); }
     }
+
+    /* ── Mobile breakpoint ───────────────────────────────────────────── */
+    @media (max-width: 768px) and (pointer: coarse) {
+      .header { padding: 12px 12px 0; }
+      .tab { font-size: 11px; padding: 5px 12px; }
+
+      .stats-wrap {
+        gap: 4px 10px;
+        padding: 10px 12px;
+      }
+      .stat-value { font-size: 17px; }
+      .stat-value.pct { font-size: 12px; }
+      .stat-label { font-size: 9px; letter-spacing: 0.06em; }
+      .stat-sep { padding-bottom: 12px; font-size: 14px; }
+
+      .search-row { padding: 0 12px 10px; }
+      .search-input { font-size: 16px; padding: 9px 32px 9px 12px; }
+
+      .grid-wrap { padding: 12px 12px 16px; }
+
+      .grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      .card {
+        padding: 12px 14px 10px 12px;
+      }
+      .card-formula { font-size: 16px; }
+      .card-name { font-size: 12px; }
+      .card-desc { font-size: 11px; -webkit-line-clamp: 2; }
+      .card-isomers { font-size: 10px; }
+
+      /* Disable hover lift effect on touch */
+      .card:hover { transform: none; box-shadow: none; }
+    }
   `],
 })
 export class CollectionComponent {

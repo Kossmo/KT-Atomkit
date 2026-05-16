@@ -1,5 +1,6 @@
-﻿import { Component, inject, computed, output, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, computed, output, ChangeDetectionStrategy } from '@angular/core';
 import { AppStateStore } from '../../store/app-state.store';
+import { DeviceService } from '../../core/device.service';
 import { DiscoveredMolecule } from '../../models';
 
 @Component({
@@ -7,7 +8,7 @@ import { DiscoveredMolecule } from '../../models';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (show()) {
-      <div class="toast-stack">
+      <div class="toast-stack" [class.mobile]="isMobile()">
         @if (stackItems().length > 1) {
           <button class="clear-btn" (click)="store.clearDiscoveries()">
             Clear all ({{ store.pendingDiscoveries().length }})
@@ -45,7 +46,7 @@ import { DiscoveredMolecule } from '../../models';
     }
   `,
   styles: [`
-    /* column-reverse: newest (i=0, active) anchors at bottom, older items stack upward, clear-btn floats at top */
+    /* ── Desktop layout : bottom-right vertical stack ───────────────────── */
     .toast-stack {
       position: fixed;
       bottom: 72px;
@@ -60,6 +61,20 @@ import { DiscoveredMolecule } from '../../models';
 
     @keyframes stack-enter {
       from { translate: 16px 0; opacity: 0; }
+    }
+
+    /* ── Mobile layout : bottom-anchored toast above the sheet peek ─────── */
+    .toast-stack.mobile {
+      top: auto;
+      bottom: calc(env(safe-area-inset-bottom, 0) + 84px);  /* above bottom-sheet peek */
+      right: 12px;
+      left: 12px;
+      width: auto;
+      animation: stack-enter-mobile 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes stack-enter-mobile {
+      from { translate: 0 16px; opacity: 0; }
     }
 
     .toast {
@@ -100,10 +115,10 @@ import { DiscoveredMolecule } from '../../models';
       background: none;
       border: none;
       color: rgba(255 255 255 / 0.25);
-      font-size: 18px;
+      font-size: 22px;
       cursor: pointer;
       line-height: 1;
-      padding: 0;
+      padding: 0 4px;
       transition: color 0.15s;
 
       &:hover { color: rgba(255 255 255 / 0.6); }
@@ -151,7 +166,7 @@ import { DiscoveredMolecule } from '../../models';
       color: rgba(140 190 255 / 0.7);
       font-size: 12px;
       cursor: pointer;
-      padding: 0;
+      padding: 4px 0;
       transition: color 0.15s;
       letter-spacing: 0.01em;
 
@@ -182,11 +197,22 @@ import { DiscoveredMolecule } from '../../models';
 })
 export class MoleculeCardComponent {
   readonly store = inject(AppStateStore);
+  readonly #device = inject(DeviceService);
   readonly openInCollection = output<DiscoveredMolecule>();
 
+  readonly isMobile = this.#device.isMobile;
   readonly show = computed(() => this.store.pendingDiscoveries().length > 0);
-  readonly stackItems = computed(() => this.store.pendingDiscoveries().slice(0, 5));
-  readonly extra = computed(() => Math.max(0, this.store.pendingDiscoveries().length - 5));
+
+  /** Mobile shows only the active toast; desktop stacks up to 5. */
+  readonly stackItems = computed(() => {
+    const max = this.isMobile() ? 1 : 5;
+    return this.store.pendingDiscoveries().slice(0, max);
+  });
+
+  readonly extra = computed(() => {
+    const limit = this.isMobile() ? 1 : 5;
+    return Math.max(0, this.store.pendingDiscoveries().length - limit);
+  });
 
   cardOpacity(i: number): number {
     return ([1, 0.82, 0.65, 0.5, 0.38] as const)[i] ?? 0.38;

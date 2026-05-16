@@ -341,6 +341,40 @@ import { ChallengeDef } from '../../models/challenge';
       color: rgba(255 255 255 / 0.15);
       filter: blur(0.4px);
     }
+
+    /* ── Mobile breakpoint ───────────────────────────────────────────── */
+    @media (max-width: 768px) and (pointer: coarse) {
+      /* The mobile playground container already accounts for the topbar — no top offset needed */
+      .challenges-page {
+        inset: 0;
+        padding: 12px 12px calc(env(safe-area-inset-bottom, 0) + 16px);
+      }
+
+      .challenges-inner { gap: 10px; }
+
+      .daily-banner { padding: 12px 14px 10px; }
+      .daily-theme { font-size: 15px; }
+      .daily-desc { font-size: 11px; }
+      .constraint-chip { font-size: 9px; padding: 1px 6px; }
+      .btn-start { font-size: 11px; padding: 5px 14px; }
+
+      .chapter-header { padding: 9px 10px; }
+      .chapter-title { font-size: 12px; }
+
+      .challenge-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        padding: 10px;
+      }
+
+      .challenge-card {
+        padding: 11px 10px 9px;
+        min-height: 88px;
+      }
+      .card-formula { font-size: 17px; }
+      .card-name { font-size: 11px; }
+      .card-stars { font-size: 13px; }
+    }
   `],
 })
 export class ChallengesComponent implements OnInit {
